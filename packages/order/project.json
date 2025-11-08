@@ -1,0 +1,31 @@
+{
+  "name": "order",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/order/src",
+  "projectType": "library",
+  "tags": ["scope:order", "type:feature"],
+  "targets": {
+    "lint:check": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["packages/order/**/*.ts"]
+      }
+    },
+    "test:unit": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "packages/order/jest.config.ts"
+      }
+    },
+    "test:e2e": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "packages/order/jest.config.ts",
+        "testPathPattern": "packages/order/__test__/e2e"
+      }
+    }
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "name": "storefront-api",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "apps/storefront-api",
+  "projectType": "application",
+  "tags": ["scope:storefront", "type:app"],
+  "targets": {
+    "build": {
+      "executor": "@nx/webpack:webpack",
+      "outputs": ["{options.outputPath}"],
+      "defaultConfiguration": "production",
+      "options": {
+        "target": "node",
+        "compiler": "tsc",
+        "outputPath": "dist/apps/storefront-api",
+        "main": "apps/storefront-api/main.ts",
+        "tsConfig": "apps/storefront-api/tsconfig.app.json",
+        "assets": ["apps/storefront-api/assets"],
+        "isolatedConfig": true,
+        "webpackConfig": "apps/storefront-api/webpack.config.js"
+      },
+      "configurations": {
+        "development": {
+          "optimization": false,
+          "extractLicenses": false,
+          "inspect": false
+        },
+        "production": {
+          "optimization": true,
+          "extractLicenses": true,
+          "inspect": false,
+          "fileReplacements": [
+            {
+              "replace": "apps/storefront-api/environments/environment.ts",
+              "with": "apps/storefront-api/environments/environment.prod.ts"
+            }
+          ]
+        }
+      }
+    },
+    "serve": {
+      "executor": "@nx/js:node",
+      "defaultConfiguration": "development",
+      "options": {
+        "buildTarget": "storefront-api:build"
+      },
+      "configurations": {
+        "development": {
+          "buildTarget": "storefront-api:build:development"
+        },
+        "production": {
+          "buildTarget": "storefront-api:build:production"
+        }
+      }
+    },
+    "lint:check": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["apps/storefront-api/**/*.ts"]
+      }
+    },
+    "test:unit": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/storefront-api/jest.config.ts"
+      }
+    }
+  }
+}

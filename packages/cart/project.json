@@ -1,0 +1,31 @@
+{
+  "name": "cart",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/cart/src",
+  "projectType": "library",
+  "tags": ["scope:cart", "type:feature"],
+  "targets": {
+    "lint:check": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["packages/cart/**/*.ts"]
+      }
+    },
+    "test:unit": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "packages/cart/jest.config.ts"
+      }
+    },
+    "test:e2e": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "packages/cart/jest.config.ts",
+        "testPathPattern": "packages/cart/__test__/e2e"
+      }
+    }
+  }
+}

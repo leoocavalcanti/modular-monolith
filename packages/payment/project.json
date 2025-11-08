@@ -1,0 +1,31 @@
+{
+  "name": "payment",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/payment/src",
+  "projectType": "library",
+  "tags": ["scope:payment", "type:feature"],
+  "targets": {
+    "lint:check": {
+      "executor": "@nx/eslint:lint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["packages/payment/**/*.ts"]
+      }
+    },
+    "test:unit": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "packages/payment/jest.config.ts"
+      }
+    },
+    "test:e2e": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "packages/payment/jest.config.ts",
+        "testPathPattern": "packages/payment/__test__/e2e"
+      }
+    }
+  }
+}
