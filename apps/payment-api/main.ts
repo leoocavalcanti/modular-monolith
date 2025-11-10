@@ -1,8 +1,12 @@
 import { NestFactory } from '@nestjs/core';
 import { Logger, ValidationPipe } from '@nestjs/common';
+import { initializeTransactionalContext } from 'typeorm-transactional';
 import { PaymentApiModule } from './payment-api.module';
 
 async function bootstrap() {
+  // Initialize transactional context before creating the app
+  initializeTransactionalContext();
+  
   const app = await NestFactory.create(PaymentApiModule);
   
   app.useGlobalPipes(new ValidationPipe({

@@ -6,6 +6,7 @@ import { OrderPurchaseOrder } from '../../persistence/entity/order-purchase-orde
 import { OrderPurchaseOrderRepository } from '../../persistence/repository/order-purchase-order.repository';
 import { OrderFulfillmentProducer } from '../../queue/producer/order-fulfillment.queue-producer';
 import { OrderService } from '../service/order.service';
+import { OrderStatus } from '../enum/order-status.enum';
 
 export interface CreateOrderRequest {
   userId: string;
@@ -78,11 +79,17 @@ export class CreateOrderFromCartUseCase {
           }))
         );
 
+        // Map items to expected format
+        const mappedItems = request.items.map(item => ({
+          quantity: item.quantity,
+          unitPrice: item.price
+        }));
+
         // Calculate amounts using domain logic
-        const shippingAmount = this.orderService.calculateShippingAmount(request.items);
-        const taxAmount = this.orderService.calculateTaxAmount(request.items);
+        const shippingAmount = this.orderService.calculateShippingAmount(mappedItems);
+        const taxAmount = this.orderService.calculateTaxAmount(mappedItems);
         const totalAmount = this.orderService.calculateOrderTotal(
-          request.items,
+          mappedItems,
           shippingAmount,
           taxAmount
         );
@@ -94,7 +101,7 @@ export class CreateOrderFromCartUseCase {
           totalAmount,
           shippingAmount,
           taxAmount,
-          status: 'pending_payment',
+          status: OrderStatus.PENDING_PAYMENT,
           items: orderItems,
           shippingAddress: request.shippingAddress,
           billingAddress: request.billingAddress,
@@ -108,17 +115,28 @@ export class CreateOrderFromCartUseCase {
         // Process payment
         const paymentResult = await this.paymentClient.processPayment({
           amount: totalAmount,
+          currency: 'BRL',
           paymentMethod: request.paymentMethod,
-          cardDetails: request.cardDetails,
+          cardDetails: request.cardDetails ? {
+            cardNumber: request.cardDetails.cardNumber,
+            expiryMonth: request.cardDetails.expiryMonth,
+            expiryYear: request.cardDetails.expiryYear,
+            cvv: request.cardDetails.cvv,
+            cardholderName: request.cardDetails.holderName
+          } : undefined,
           orderId: savedOrder.id,
           customerEmail: request.customerEmail,
         });
 
         // Apply payment result using domain logic
-        this.orderService.applyPaymentResultToOrder(savedOrder, paymentResult);
+        this.orderService.applyPaymentResultToOrder(savedOrder, {
+          status: paymentResult.status,
+          transactionId: paymentResult.transactionId || ''
+        });
         
-        const updatedOrder = await this.orderRepository.save(savedOrder);
+        await this.orderRepository.save(savedOrder);
 
+        if (paymentResult.status === 'success') {
           // Queue for fulfillment
           const fulfillmentJobId = await this.fulfillmentQueue.fulfillOrder(savedOrder);
           
@@ -130,7 +148,7 @@ export class CreateOrderFromCartUseCase {
 
           this.logger.log(`Order created and paid successfully`, {
             orderId: savedOrder.id,
-            paymentTransactionId: paymentResult.transactionId,
+            paymentTransactionId: paymentResult.transactionId || '',
             fulfillmentJobId,
           });
 
@@ -138,28 +156,24 @@ export class CreateOrderFromCartUseCase {
             orderId: savedOrder.id,
             totalAmount: savedOrder.totalAmount,
             status: savedOrder.status,
-            paymentTransactionId: paymentResult.transactionId,
-            estimatedDeliveryDate: savedOrder.estimatedDeliveryDate,
+            paymentTransactionId: paymentResult.transactionId || '',
+            estimatedDeliveryDate: savedOrder.estimatedDeliveryDate || this.calculateEstimatedDelivery(),
             fulfillmentJobId,
           };
         } else {
           // Payment pending or failed
-          savedOrder.status = paymentResult.status === 'failed' ? 'payment_failed' : 'pending_payment';
-          savedOrder.paymentTransactionId = paymentResult.transactionId;
-          await this.orderRepository.save(savedOrder);
-
           this.logger.log(`Order created but payment ${paymentResult.status}`, {
             orderId: savedOrder.id,
             paymentStatus: paymentResult.status,
-            paymentTransactionId: paymentResult.transactionId,
+            paymentTransactionId: paymentResult.transactionId || '',
           });
 
           return {
             orderId: savedOrder.id,
             totalAmount: savedOrder.totalAmount,
             status: savedOrder.status,
-            paymentTransactionId: paymentResult.transactionId,
-            estimatedDeliveryDate: savedOrder.estimatedDeliveryDate,
+            paymentTransactionId: paymentResult.transactionId || '',
+            estimatedDeliveryDate: savedOrder.estimatedDeliveryDate || this.calculateEstimatedDelivery(),
           };
         }
       },

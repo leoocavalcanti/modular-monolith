@@ -15,7 +15,6 @@
         "outputPath": "dist/apps/storefront-api",
         "main": "apps/storefront-api/main.ts",
         "tsConfig": "apps/storefront-api/tsconfig.app.json",
-        "assets": ["apps/storefront-api/assets"],
         "isolatedConfig": true,
         "webpackConfig": "apps/storefront-api/webpack.config.js"
       },
@@ -28,13 +27,7 @@
         "production": {
           "optimization": true,
           "extractLicenses": true,
-          "inspect": false,
-          "fileReplacements": [
-            {
-              "replace": "apps/storefront-api/environments/environment.ts",
-              "with": "apps/storefront-api/environments/environment.prod.ts"
-            }
-          ]
+          "inspect": false
         }
       }
     },

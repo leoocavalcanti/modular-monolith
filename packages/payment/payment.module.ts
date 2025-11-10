@@ -14,7 +14,6 @@ import { RetryFailedPaymentUseCase } from './src/core/use-case/retry-failed-paym
 
 @Module({
   imports: [
-    ConfigModule,
     PaymentPersistenceModule,
     QueueModule,
   ],

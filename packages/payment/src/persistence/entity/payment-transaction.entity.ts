@@ -1,11 +1,10 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column } from 'typeorm';
+import { DefaultEntity } from '@tlc/shared-module/typeorm';
 import { PaymentStatus } from '../../core/enum/payment-status.enum';
 import { PaymentMethod } from '../../core/enum/payment-method.enum';
 
 @Entity({ name: 'PaymentTransaction' })
-export class PaymentTransaction {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+export class PaymentTransaction extends DefaultEntity<PaymentTransaction> {
 
   @Column()
   orderId: string;
@@ -68,11 +67,6 @@ export class PaymentTransaction {
   @Column('json', { nullable: true })
   metadata: Record<string, any>;
 
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
 
   @Column({ nullable: true })
   processedAt: Date;

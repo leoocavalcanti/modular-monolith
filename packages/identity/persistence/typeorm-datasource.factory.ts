@@ -9,7 +9,7 @@ export const dataSourceOptionsFactory = (
   type: 'postgres',
   name: 'identity',
   host: configService.get('identity.database.host'),
-  port: 5432,
+  port: configService.get('identity.database.port'),
   username: configService.get('identity.database.username'),
   password: configService.get('identity.database.password'),
   database: configService.get('identity.database.database'),

@@ -15,7 +15,6 @@
         "outputPath": "dist/apps/admin-api",
         "main": "apps/admin-api/main.ts",
         "tsConfig": "apps/admin-api/tsconfig.app.json",
-        "assets": ["apps/admin-api/assets"],
         "isolatedConfig": true,
         "webpackConfig": "apps/admin-api/webpack.config.js"
       },
@@ -28,13 +27,7 @@
         "production": {
           "optimization": true,
           "extractLicenses": true,
-          "inspect": false,
-          "fileReplacements": [
-            {
-              "replace": "apps/admin-api/environments/environment.ts",
-              "with": "apps/admin-api/environments/environment.prod.ts"
-            }
-          ]
+          "inspect": false
         }
       }
     },

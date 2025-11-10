@@ -1,13 +1,14 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import { Entity, Column, OneToMany } from 'typeorm';
 import { OrderStatus } from '../../core/enum/order-status.enum';
 import { PaymentStatus } from '../../core/enum/payment-status.enum';
 import { OrderPurchaseOrderItem } from './order-purchase-order-item.entity';
+import { DefaultEntity } from '@tlc/shared-module/typeorm';
 
 @Entity({ name: 'OrderPurchaseOrder' })
-export class OrderPurchaseOrder {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
+export class OrderPurchaseOrder extends DefaultEntity<OrderPurchaseOrder> {
+  constructor(data: Partial<OrderPurchaseOrder>) {
+    super(data);
+  }
   @Column()
   orderNumber: string;
 
@@ -33,6 +34,21 @@ export class OrderPurchaseOrder {
 
   @Column({ nullable: true })
   paymentId: string;
+
+  @Column({ nullable: true })
+  paymentTransactionId: string;
+
+  @Column({ nullable: true })
+  trackingNumber: string;
+
+  @Column({ nullable: true })
+  customerEmail: string;
+
+  @Column('text', { nullable: true })
+  notes: string;
+
+  @Column({ nullable: true })
+  estimatedDeliveryDate: Date;
 
   @Column('decimal', { precision: 10, scale: 2 })
   totalAmount: number;
@@ -66,12 +82,6 @@ export class OrderPurchaseOrder {
 
   @Column('json', { nullable: true })
   metadata: Record<string, any>;
-
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
 
   calculateSubtotal(): number {
     return this.items?.reduce((total, item) => total + item.getSubtotal(), 0) || 0;

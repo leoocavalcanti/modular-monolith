@@ -8,6 +8,10 @@ export const sharedConfigSchema = z.object({
   billingApi: z.object({
     url: z.string(),
   }),
+  redis: z.object({
+    host: z.string().default('localhost'),
+    port: z.coerce.number().default(6379),
+  }),
 });
 
 export type Environment = z.infer<typeof environmentSchema>;
@@ -19,6 +23,10 @@ export const sharedConfigFactory = (): SharedConfig => {
     env: process.env.NODE_ENV,
     billingApi: {
       url: process.env.BILLING_API_URL,
+    },
+    redis: {
+      host: process.env.REDIS_HOST,
+      port: process.env.REDIS_PORT,
     },
   });
 

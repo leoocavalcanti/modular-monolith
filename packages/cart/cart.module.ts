@@ -11,7 +11,6 @@ import { ClearCartUseCase } from './src/core/use-case/clear-cart.use-case';
 
 @Module({
   imports: [
-    ConfigModule,
     AuthModule,
     CatalogModule,
     CartPersistenceModule,

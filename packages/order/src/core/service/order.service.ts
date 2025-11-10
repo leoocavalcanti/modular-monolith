@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { OrderPurchaseOrder } from '../../persistence/entity/order-purchase-order.entity';
 import { OrderPurchaseOrderItem } from '../../persistence/entity/order-purchase-order-item.entity';
-import { OrderStatus } from '../model/order-status.model';
+import { OrderStatus } from '../enum/order-status.enum';
 
 /**
  * Domain Service: OrderService
@@ -86,24 +86,21 @@ export class OrderService {
    * Domain Logic: Check if order can be cancelled
    */
   canCancelOrder(order: OrderPurchaseOrder): boolean {
-    const currentStatus = OrderStatus.fromString(order.status);
-    return currentStatus.allowsCancellation();
+    return [OrderStatus.PENDING, OrderStatus.CONFIRMED, OrderStatus.PENDING_PAYMENT].includes(order.status);
   }
 
   /**
    * Domain Logic: Check if order can be modified
    */
   canModifyOrder(order: OrderPurchaseOrder): boolean {
-    const currentStatus = OrderStatus.fromString(order.status);
-    return currentStatus.allowsModification();
+    return [OrderStatus.PENDING, OrderStatus.PENDING_PAYMENT].includes(order.status);
   }
 
   /**
    * Domain Logic: Check if order needs attention
    */
   orderNeedsAttention(order: OrderPurchaseOrder): boolean {
-    const currentStatus = OrderStatus.fromString(order.status);
-    return currentStatus.needsAttention();
+    return [OrderStatus.PAYMENT_FAILED, OrderStatus.CANCELLED].includes(order.status);
   }
 
   /**
@@ -127,11 +124,23 @@ export class OrderService {
   /**
    * Domain Logic: Validate status transition
    */
-  validateStatusTransition(currentStatus: string, newStatus: string): void {
-    const current = OrderStatus.fromString(currentStatus);
-    const target = OrderStatus.fromString(newStatus);
-
-    if (!current.canTransitionTo(target)) {
+  validateStatusTransition(currentStatus: OrderStatus, newStatus: OrderStatus): void {
+    // Simple validation - can expand logic later
+    const allowedTransitions: Record<OrderStatus, OrderStatus[]> = {
+      [OrderStatus.PENDING]: [OrderStatus.CONFIRMED, OrderStatus.CANCELLED],
+      [OrderStatus.CONFIRMED]: [OrderStatus.PROCESSING, OrderStatus.CANCELLED],
+      [OrderStatus.PROCESSING]: [OrderStatus.SHIPPED, OrderStatus.CANCELLED],
+      [OrderStatus.SHIPPED]: [OrderStatus.DELIVERED],
+      [OrderStatus.DELIVERED]: [],
+      [OrderStatus.CANCELLED]: [],
+      [OrderStatus.REFUNDED]: [],
+      [OrderStatus.PAID]: [OrderStatus.PROCESSING],
+      [OrderStatus.PAYMENT_FAILED]: [OrderStatus.PENDING_PAYMENT, OrderStatus.CANCELLED],
+      [OrderStatus.PENDING_PAYMENT]: [OrderStatus.PAID, OrderStatus.PAYMENT_FAILED, OrderStatus.CANCELLED],
+    };
+    
+    const allowed = allowedTransitions[currentStatus]?.includes(newStatus);
+    if (!allowed) {
       throw new Error(
         `Invalid status transition from ${currentStatus} to ${newStatus}`
       );
@@ -154,14 +163,14 @@ export class OrderService {
     this.validateOrderItems(cartItems);
 
     return cartItems.map(item => {
-      const orderItem = new OrderPurchaseOrderItem();
-      orderItem.productId = item.productId;
-      orderItem.productName = item.productName;
-      orderItem.productSku = item.productSku || '';
-      orderItem.unitPrice = item.unitPrice;
-      orderItem.quantity = item.quantity;
-      orderItem.productAttributes = item.productAttributes || {};
-      return orderItem;
+      return new OrderPurchaseOrderItem({
+        productId: item.productId,
+        productName: item.productName,
+        productSku: item.productSku || '',
+        unitPrice: item.unitPrice,
+        quantity: item.quantity,
+        productAttributes: item.productAttributes || {},
+      });
     });
   }
 
@@ -174,12 +183,12 @@ export class OrderService {
   ): void {
     order.paymentTransactionId = paymentResult.transactionId;
 
-    if (paymentResult.status === 'completed') {
-      order.status = OrderStatus.PAID.getValue();
+    if (paymentResult.status === 'completed' || paymentResult.status === 'success') {
+      order.status = OrderStatus.PAID;
     } else if (paymentResult.status === 'failed') {
-      order.status = OrderStatus.PAYMENT_FAILED.getValue();
+      order.status = OrderStatus.PAYMENT_FAILED;
     } else {
-      order.status = OrderStatus.PENDING_PAYMENT.getValue();
+      order.status = OrderStatus.PENDING_PAYMENT;
     }
   }
 
@@ -187,18 +196,15 @@ export class OrderService {
    * Domain Logic: Format order summary for display
    */
   formatOrderSummary(order: OrderPurchaseOrder): string {
-    const status = OrderStatus.fromString(order.status);
-    return `${order.orderNumber} - ${status.getDescription()} - R$ ${order.totalAmount.toFixed(2)}`;
+    return `${order.orderNumber} - ${order.status} - R$ ${order.totalAmount.toFixed(2)}`;
   }
 
   /**
    * Domain Logic: Check if order is eligible for refund
    */
   isEligibleForRefund(order: OrderPurchaseOrder): boolean {
-    const currentStatus = OrderStatus.fromString(order.status);
-    
     // Business rule: Can only refund delivered orders within 30 days
-    if (!currentStatus.equals(OrderStatus.DELIVERED)) {
+    if (order.status !== OrderStatus.DELIVERED) {
       return false;
     }
 
@@ -206,5 +212,36 @@ export class OrderService {
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     
     return order.createdAt > thirtyDaysAgo;
+  }
+
+  // Methods needed by controllers/facades
+  async getUserOrdersByStatus(_userId: string, _status: OrderStatus): Promise<OrderPurchaseOrder[]> {
+    // TODO: Implement with repository
+    return [];
+  }
+
+  async getUserOrders(_userId: string): Promise<OrderPurchaseOrder[]> {
+    // TODO: Implement with repository
+    return [];
+  }
+
+  async getOrderById(_orderId: string): Promise<OrderPurchaseOrder | null> {
+    // TODO: Implement with repository
+    return null;
+  }
+
+  async createOrder(_orderData: any): Promise<OrderPurchaseOrder> {
+    // TODO: Implement with repository
+    throw new Error('Not implemented');
+  }
+
+  async updateOrderStatus(_orderId: string, _status: OrderStatus): Promise<OrderPurchaseOrder> {
+    // TODO: Implement with repository
+    throw new Error('Not implemented');
+  }
+
+  async updatePaymentStatus(_orderId: string, _paymentStatus: any): Promise<OrderPurchaseOrder> {
+    // TODO: Implement with repository
+    throw new Error('Not implemented');
   }
 }

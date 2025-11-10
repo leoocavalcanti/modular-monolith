@@ -1,12 +1,13 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
+import { Entity, Column, OneToMany } from 'typeorm';
 import { CartStatus } from '../../core/enum/cart-status.enum';
 import { CartShoppingCartItem } from './cart-shopping-cart-item.entity';
+import { DefaultEntity } from '@tlc/shared-module/typeorm';
 
 @Entity({ name: 'CartShoppingCart' })
-export class CartShoppingCart {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
+export class CartShoppingCart extends DefaultEntity<CartShoppingCart> {
+  constructor(data: Partial<CartShoppingCart>) {
+    super(data);
+  }
   @Column()
   userId: string;
 
@@ -22,12 +23,6 @@ export class CartShoppingCart {
 
   @OneToMany(() => CartShoppingCartItem, item => item.cart, { cascade: true })
   items: CartShoppingCartItem[];
-
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
 
   calculateTotal(): number {
     return this.items?.reduce((total, item) => total + (item.price * item.quantity), 0) || 0;

@@ -10,12 +10,27 @@ export class HttpClient {
 
   async get<T extends Record<string, any>>(
     url: string,
-    options: Record<string, any>
+    options: Record<string, any> = {}
   ): Promise<T> {
     const { data } = await firstValueFrom(
       this.httpService.get<T>(url, options).pipe(
         catchError((error: AxiosError) => {
           throw new HttpClientException(`Error fetching data from ${url}: ${error}`);
+        })
+      )
+    );
+    return data;
+  }
+
+  async post<T extends Record<string, any>>(
+    url: string,
+    body: Record<string, any>,
+    options: Record<string, any> = {}
+  ): Promise<T> {
+    const { data } = await firstValueFrom(
+      this.httpService.post<T>(url, body, options).pipe(
+        catchError((error: AxiosError) => {
+          throw new HttpClientException(`Error posting data to ${url}: ${error}`);
         })
       )
     );

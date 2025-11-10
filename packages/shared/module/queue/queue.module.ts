@@ -1,6 +1,7 @@
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '../config';
+import { ConfigModule } from '../config';
+import { ConfigService } from '@nestjs/config';
 import { QUEUES } from './queue-constants';
 
 @Module({
@@ -9,8 +10,8 @@ import { QUEUES } from './queue-constants';
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
         connection: {
-          host: configService.get('redis.host', 'redis'),
-          port: configService.get('redis.port', 6379),
+          host: configService.get('REDIS_HOST', 'redis'),
+          port: configService.get('REDIS_PORT', 6379),
         },
         defaultJobOptions: {
           attempts: 3,

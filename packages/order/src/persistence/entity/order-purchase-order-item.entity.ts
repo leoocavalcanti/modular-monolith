@@ -1,11 +1,12 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { OrderPurchaseOrder } from './order-purchase-order.entity';
+import { DefaultEntity } from '@tlc/shared-module/typeorm';
 
 @Entity({ name: 'OrderPurchaseOrderItem' })
-export class OrderPurchaseOrderItem {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
+export class OrderPurchaseOrderItem extends DefaultEntity<OrderPurchaseOrderItem> {
+  constructor(data: Partial<OrderPurchaseOrderItem>) {
+    super(data);
+  }
   @Column()
   orderId: string;
 
@@ -31,10 +32,11 @@ export class OrderPurchaseOrderItem {
   @JoinColumn({ name: 'orderId' })
   order: OrderPurchaseOrder;
 
-  @CreateDateColumn()
-  createdAt: Date;
-
   getSubtotal(): number {
     return this.unitPrice * this.quantity;
+  }
+
+  get price(): number {
+    return this.unitPrice;
   }
 }

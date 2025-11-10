@@ -3,6 +3,7 @@ import { AppLogger } from '@tlc/shared-module/logger';
 import { runInTransaction } from 'typeorm-transactional';
 import { CatalogProduct } from '../../persistence/entity/catalog-product.entity';
 import { CatalogProductRepository } from '../../persistence/repository/catalog-product.repository';
+import { ProductCategory } from '../enum/product-category.enum';
 
 export interface CreateProductRequest {
   name: string;
@@ -72,11 +73,13 @@ export class CreateProductUseCase {
           price: request.price,
           stock: request.stock,
           sku: request.sku,
-          category: request.category,
-          imageUrl: request.imageUrl,
-          specifications: request.specifications,
-          dimensions: request.dimensions,
-          isActive: true,
+          category: request.category as ProductCategory,
+          imageUrls: request.imageUrl ? [request.imageUrl] : [],
+          attributes: {
+            specifications: request.specifications,
+            dimensions: request.dimensions,
+            isActive: true,
+          },
           createdAt: new Date(),
           updatedAt: new Date(),
         });

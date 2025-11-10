@@ -25,4 +25,15 @@ export class CartShoppingCartItemRepository extends DefaultTypeOrmRepository<Car
       order: { createdAt: 'DESC' },
     });
   }
+
+  async findByCartAndProduct(cartId: string, productId: string): Promise<CartShoppingCartItem | null> {
+    return this.findByCartIdAndProductId(cartId, productId);
+  }
+
+  async removeByCartId(cartId: string): Promise<void> {
+    const items = await this.findByCartId(cartId);
+    if (items.length > 0) {
+      await this.remove(items);
+    }
+  }
 }

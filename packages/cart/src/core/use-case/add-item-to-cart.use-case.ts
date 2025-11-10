@@ -71,8 +71,6 @@ export class AddItemToCartUseCase {
         if (cartItem) {
           // Update existing item quantity
           cartItem.quantity += request.quantity;
-          cartItem.totalPrice = cartItem.quantity * cartItem.productPrice;
-          cartItem.updatedAt = new Date();
           cartItem = await this.cartItemRepository.save(cartItem);
 
           this.logger.log(`Updated existing cart item`, {
@@ -88,10 +86,9 @@ export class AddItemToCartUseCase {
             cartId: cart.id,
             productId: request.productId,
             productName: request.productName,
-            productPrice: request.productPrice,
-            productImageUrl: request.productImageUrl,
+            productSku: '',
+            price: request.productPrice,
             quantity: request.quantity,
-            totalPrice: request.quantity * request.productPrice,
             createdAt: new Date(),
             updatedAt: new Date(),
           });

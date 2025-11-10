@@ -35,4 +35,8 @@ export class CartShoppingCartRepository extends DefaultTypeOrmRepository<CartSho
       order: { updatedAt: 'DESC' },
     });
   }
+
+  async findByUserId(userId: string): Promise<CartShoppingCart | null> {
+    return this.findActiveCartByUserId(userId);
+  }
 }

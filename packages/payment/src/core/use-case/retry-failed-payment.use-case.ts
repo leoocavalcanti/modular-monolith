@@ -3,6 +3,7 @@ import { AppLogger } from '@tlc/shared-module/logger';
 import { runInTransaction } from 'typeorm-transactional';
 import { PaymentTransactionRepository } from '../../persistence/repository/payment-transaction.repository';
 import { PaymentProcessingProducer } from '../../queue/producer/payment-processing.queue-producer';
+import { PaymentStatus } from '../enum/payment-status.enum';
 
 @Injectable()
 export class RetryFailedPaymentUseCase {
@@ -31,7 +32,7 @@ export class RetryFailedPaymentUseCase {
         }
 
         // Reset status to processing for retry
-        transaction.status = 'processing';
+        transaction.status = PaymentStatus.PROCESSING;
         await this.paymentRepository.save(transaction);
 
         // Queue retry with delay based on attempt number
@@ -46,7 +47,7 @@ export class RetryFailedPaymentUseCase {
         });
 
         return {
-          queueJobId,
+          queueJobId: queueJobId || '',
           retryAttempt,
         };
       },

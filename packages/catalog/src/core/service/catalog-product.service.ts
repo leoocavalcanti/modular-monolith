@@ -64,16 +64,17 @@ export class CatalogProductService {
       throw new Error(`Product with SKU ${data.sku} already exists`);
     }
 
-    const product = new CatalogProduct();
-    product.name = data.name;
-    product.description = data.description;
-    product.price = data.price;
-    product.stock = data.stock;
-    product.sku = data.sku;
-    product.category = data.category;
-    product.imageUrls = data.imageUrls || [];
-    product.attributes = data.attributes || {};
-    product.status = ProductStatus.DRAFT;
+    const product = new CatalogProduct({
+      name: data.name,
+      description: data.description || '',
+      price: data.price,
+      stock: data.stock,
+      sku: data.sku,
+      category: data.category,
+      imageUrls: data.imageUrls || [],
+      attributes: data.attributes || {},
+      status: ProductStatus.DRAFT,
+    });
 
     return this.catalogProductRepository.save(product);
   }
@@ -97,7 +98,9 @@ export class CatalogProductService {
   @Transactional({ connectionName: 'catalog' })
   async deleteProduct(productId: string): Promise<void> {
     const product = await this.getProductById(productId);
-    await this.catalogProductRepository.remove(product);
+    if (product) {
+      await this.catalogProductRepository.remove(product);
+    }
   }
 
   @Transactional({ connectionName: 'catalog' })

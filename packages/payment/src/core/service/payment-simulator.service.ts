@@ -43,7 +43,7 @@ export class PaymentSimulatorService {
     }
   }
 
-  private async simulateCardPayment(amount: number, cardDetails?: any): Promise<SimulationResult> {
+  private async simulateCardPayment(_amount: number, cardDetails?: any): Promise<SimulationResult> {
     if (!cardDetails || !cardDetails.cardNumber) {
       return {
         success: false,
@@ -91,7 +91,7 @@ export class PaymentSimulatorService {
     };
   }
 
-  private async simulatePixPayment(amount: number): Promise<SimulationResult> {
+  private async simulatePixPayment(_amount: number): Promise<SimulationResult> {
     const transactionId = `pix_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
     
     const pixKey = `${Math.random().toString().substring(2, 11)}-${Math.random().toString().substring(2, 6)}-${Math.random().toString().substring(2, 6)}-${Math.random().toString().substring(2, 6)}-${Math.random().toString().substring(2, 13)}`;

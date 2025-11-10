@@ -10,7 +10,6 @@ import { UpdateProductStockUseCase } from './src/core/use-case/update-product-st
 
 @Module({
   imports: [
-    ConfigModule,
     AuthModule,
     CatalogPersistenceModule,
   ],

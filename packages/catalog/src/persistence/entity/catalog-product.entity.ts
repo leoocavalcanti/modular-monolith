@@ -1,12 +1,13 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from 'typeorm';
+import { Entity, Column } from 'typeorm';
 import { ProductCategory } from '../../core/enum/product-category.enum';
 import { ProductStatus } from '../../core/enum/product-status.enum';
+import { DefaultEntity } from '@tlc/shared-module/typeorm';
 
 @Entity({ name: 'CatalogProduct' })
-export class CatalogProduct {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
+export class CatalogProduct extends DefaultEntity<CatalogProduct> {
+  constructor(data: Partial<CatalogProduct>) {
+    super(data);
+  }
   @Column()
   name: string;
 
@@ -41,9 +42,4 @@ export class CatalogProduct {
   @Column('json', { nullable: true })
   attributes: Record<string, any>;
 
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
 }

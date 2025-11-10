@@ -1,57 +1,65 @@
 import { Controller, Get, Post, Body, Param } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
-import { PaymentProcessingService } from '../../../core/service/payment-processing.service';
+import { ProcessPaymentUseCase } from '../../../core/use-case/process-payment.use-case';
 import { ProcessPaymentDto } from '../dto/request/process-payment.dto';
 import { PaymentResponseDto, ProcessPaymentResponseDto } from '../dto/response/payment.dto';
+import { PaymentStatus } from '../../../core/enum/payment-status.enum';
+import { PaymentMethod } from '../../../core/enum/payment-method.enum';
 
-@Controller('payments')
+@Controller()
 export class PaymentController {
   constructor(
-    private readonly paymentProcessingService: PaymentProcessingService
+    private readonly processPaymentUseCase: ProcessPaymentUseCase
   ) {}
 
-  @Post('process')
+  @Get('health')
+  health(): { status: string } {
+    return { status: 'ok' };
+  }
+
+  @Post('payments/process')
   async processPayment(@Body() processPaymentDto: ProcessPaymentDto): Promise<ProcessPaymentResponseDto> {
-    const result = await this.paymentProcessingService.processPayment(processPaymentDto);
+    const result = await this.processPaymentUseCase.execute({
+      amount: processPaymentDto.amount,
+      paymentMethod: processPaymentDto.paymentMethod,
+      orderId: processPaymentDto.orderId,
+      customerEmail: processPaymentDto.customerEmail,
+      cardDetails: processPaymentDto.cardDetails ? {
+        cardNumber: processPaymentDto.cardDetails.cardNumber,
+        expiryMonth: processPaymentDto.cardDetails.expiryMonth,
+        expiryYear: processPaymentDto.cardDetails.expiryYear,
+        cvv: processPaymentDto.cardDetails.cvv,
+        holderName: processPaymentDto.cardDetails.cardholderName || 'Unknown'
+      } : undefined,
+    });
 
     return plainToInstance(ProcessPaymentResponseDto, result, {
       excludeExtraneousValues: true,
     });
   }
 
-  @Get(':id')
-  async getPaymentStatus(@Param('id') paymentId: string): Promise<ProcessPaymentResponseDto> {
-    const result = await this.paymentProcessingService.getPaymentStatus(paymentId);
-
-    return plainToInstance(ProcessPaymentResponseDto, result, {
-      excludeExtraneousValues: true,
-    });
-  }
-
-  @Get('order/:orderId')
-  async getPaymentsByOrder(@Param('orderId') orderId: string): Promise<PaymentResponseDto[]> {
-    const payments = await this.paymentProcessingService.getPaymentsByOrderId(orderId);
-
-    return payments.map(payment =>
-      plainToInstance(PaymentResponseDto, payment, {
-        excludeExtraneousValues: true,
-      })
-    );
-  }
-
-  @Get()
-  async getAllPayments(): Promise<PaymentResponseDto[]> {
-    const payments = await this.paymentProcessingService.getAllPayments();
-
-    return payments.map(payment =>
-      plainToInstance(PaymentResponseDto, payment, {
-        excludeExtraneousValues: true,
-      })
-    );
-  }
-
-  @Post('webhooks/simulator')
-  async simulatorWebhook(@Body() webhookData: any): Promise<{ message: string }> {
-    return { message: 'Webhook received successfully' };
+  @Get('payments/:id')
+  async getPayment(@Param('id') id: string): Promise<PaymentResponseDto> {
+    // TODO: Implementar GetPaymentUseCase
+    return {
+      id,
+      orderId: 'unknown',
+      amount: 0,
+      currency: 'BRL',
+      paymentMethod: PaymentMethod.CREDIT_CARD,
+      status: PaymentStatus.PENDING,
+      transactionId: '',
+      gatewayReference: '',
+      customerEmail: '',
+      cardDetails: {},
+      pixDetails: {},
+      boletoDetails: {},
+      errorCode: '',
+      errorMessage: '',
+      metadata: {},
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      processedAt: new Date()
+    };
   }
 }

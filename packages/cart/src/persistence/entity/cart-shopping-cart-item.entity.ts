@@ -1,11 +1,12 @@
-import { Entity, Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { CartShoppingCart } from './cart-shopping-cart.entity';
+import { DefaultEntity } from '@tlc/shared-module/typeorm';
 
 @Entity({ name: 'CartShoppingCartItem' })
-export class CartShoppingCartItem {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
+export class CartShoppingCartItem extends DefaultEntity<CartShoppingCartItem> {
+  constructor(data: Partial<CartShoppingCartItem>) {
+    super(data);
+  }
   @Column()
   cartId: string;
 
@@ -31,13 +32,11 @@ export class CartShoppingCartItem {
   @JoinColumn({ name: 'cartId' })
   cart: CartShoppingCart;
 
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
-
   getSubtotal(): number {
     return this.price * this.quantity;
+  }
+
+  get totalPrice(): number {
+    return this.getSubtotal();
   }
 }

@@ -56,14 +56,15 @@ export class CartService {
       existingItem.price = data.price;
       await this.cartItemRepository.save(existingItem);
     } else {
-      const cartItem = new CartShoppingCartItem();
-      cartItem.cartId = cart.id;
-      cartItem.productId = data.productId;
-      cartItem.productName = data.productName;
-      cartItem.productSku = data.productSku;
-      cartItem.price = data.price;
-      cartItem.quantity = data.quantity;
-      cartItem.productAttributes = data.productAttributes || {};
+      const cartItem = new CartShoppingCartItem({
+        cartId: cart.id,
+        productId: data.productId,
+        productName: data.productName,
+        productSku: data.productSku,
+        price: data.price,
+        quantity: data.quantity,
+        productAttributes: data.productAttributes || {},
+      });
       
       await this.cartItemRepository.save(cartItem);
     }
@@ -136,10 +137,11 @@ export class CartService {
   }
 
   private async createCart(userId: string): Promise<CartShoppingCart> {
-    const cart = new CartShoppingCart();
-    cart.userId = userId;
-    cart.status = CartStatus.ACTIVE;
-    cart.totalAmount = 0;
+    const cart = new CartShoppingCart({
+      userId: userId,
+      status: CartStatus.ACTIVE,
+      totalAmount: 0,
+    });
     
     return this.cartRepository.save(cart);
   }

@@ -1,13 +1,13 @@
-import { Controller, Get, Post, Put, Body, Param, Query, UseGuards } from '@nestjs/common';
-import { plainToInstance } from 'class-transformer';
-import { AuthGuard } from '@tlc/shared-module/auth';
-import { ClsService } from 'nestjs-cls';
-import { OrderService } from '../../../core/service/order.service';
+import { Body, Controller, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { CartFacade } from '@tlc/cart';
+import { AuthGuard } from '@tlc/shared-module/auth';
+import { plainToInstance } from 'class-transformer';
+import { ClsService } from 'nestjs-cls';
+import { OrderStatus } from '../../../core/enum/order-status.enum';
+import { OrderService } from '../../../core/service/order.service';
 import { CreateOrderDto } from '../dto/request/create-order.dto';
 import { UpdateOrderStatusDto } from '../dto/request/update-order-status.dto';
 import { OrderResponseDto } from '../dto/response/order.dto';
-import { OrderStatus } from '../../../core/enum/order-status.enum';
 
 @Controller('orders')
 @UseGuards(AuthGuard)
@@ -26,7 +26,7 @@ export class OrderController {
       ? await this.orderService.getUserOrdersByStatus(userId, status)
       : await this.orderService.getUserOrders(userId);
 
-    return orders.map(order =>
+    return orders.map((order) =>
       plainToInstance(OrderResponseDto, order, {
         excludeExtraneousValues: true,
       })

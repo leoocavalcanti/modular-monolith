@@ -15,7 +15,11 @@ export class OrderFacade implements OrderManagementApi {
   constructor(private readonly orderService: OrderService) {}
 
   async getOrderById(orderId: string): Promise<OrderPurchaseOrder> {
-    return this.orderService.getOrderById(orderId);
+    const order = await this.orderService.getOrderById(orderId);
+    if (!order) {
+      throw new Error(`Order ${orderId} not found`);
+    }
+    return order;
   }
 
   async updateOrderStatus(orderId: string, status: OrderStatus): Promise<OrderPurchaseOrder> {

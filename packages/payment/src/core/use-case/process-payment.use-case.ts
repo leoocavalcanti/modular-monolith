@@ -6,10 +6,12 @@ import { PaymentTransactionRepository } from '../../persistence/repository/payme
 import { PaymentProcessingProducer } from '../../queue/producer/payment-processing.queue-producer';
 import { PaymentSimulatorService } from '../service/payment-simulator.service';
 import { PaymentProcessingService } from '../service/payment-processing.service';
+import { PaymentMethod } from '../enum/payment-method.enum';
+import { PaymentStatus } from '../enum/payment-status.enum';
 
 export interface ProcessPaymentRequest {
   amount: number;
-  paymentMethod: 'credit_card' | 'debit_card' | 'pix' | 'boleto';
+  paymentMethod: PaymentMethod;
   cardDetails?: {
     cardNumber: string;
     expiryMonth: string;
@@ -23,9 +25,9 @@ export interface ProcessPaymentRequest {
 
 export interface ProcessPaymentResult {
   transactionId: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
+  status: PaymentStatus;
   amount: number;
-  paymentMethod: string;
+  paymentMethod: PaymentMethod;
   createdAt: Date;
   queueJobId?: string;
 }
@@ -61,11 +63,11 @@ export class ProcessPaymentUseCase {
           paymentMethod: request.paymentMethod,
           cardDetails: request.cardDetails ? {
             lastFourDigits: this.paymentProcessingService.maskCardNumber(request.cardDetails.cardNumber),
-            holderName: request.cardDetails.holderName,
+            cardholderName: request.cardDetails.holderName,
           } : undefined,
           orderId: request.orderId,
           customerEmail: request.customerEmail,
-          status: 'pending',
+          status: PaymentStatus.PENDING,
           createdAt: new Date(),
         });
 
@@ -96,7 +98,7 @@ export class ProcessPaymentUseCase {
 
           return {
             transactionId: savedTransaction.id,
-            status: savedTransaction.status as any,
+            status: savedTransaction.status,
             amount: savedTransaction.amount,
             paymentMethod: savedTransaction.paymentMethod,
             createdAt: savedTransaction.createdAt,
@@ -106,7 +108,7 @@ export class ProcessPaymentUseCase {
         // For async payments (cards, boleto), queue for processing
         const queueJobId = await this.paymentQueue.processPayment(savedTransaction);
 
-        savedTransaction.status = 'processing';
+        savedTransaction.status = PaymentStatus.PROCESSING;
         await this.paymentRepository.save(savedTransaction);
 
         this.logger.log(`Payment queued for async processing`, {
@@ -117,7 +119,7 @@ export class ProcessPaymentUseCase {
 
         return {
           transactionId: savedTransaction.id,
-          status: savedTransaction.status as any,
+          status: savedTransaction.status,
           amount: savedTransaction.amount,
           paymentMethod: savedTransaction.paymentMethod,
           createdAt: savedTransaction.createdAt,

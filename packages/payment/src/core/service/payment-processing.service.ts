@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PaymentTransaction } from '../../persistence/entity/payment-transaction.entity';
 import { PaymentSimulatorService } from './payment-simulator.service';
 import { PaymentAmount } from '../model/payment-amount.model';
+import { PaymentStatus } from '../enum/payment-status.enum';
 
 /**
  * Domain Service: PaymentProcessingService
@@ -22,7 +23,7 @@ export class PaymentProcessingService {
     paymentMethod: string
   ): void {
     if (simulationResult.success) {
-      transaction.status = 'completed';
+      transaction.status = PaymentStatus.SUCCESS;
       transaction.transactionId = simulationResult.transactionId;
       transaction.processedAt = new Date();
 
@@ -53,7 +54,7 @@ export class PaymentProcessingService {
 
       transaction.metadata = simulationResult.additionalData;
     } else {
-      transaction.status = 'failed';
+      transaction.status = PaymentStatus.FAILED;
       transaction.errorCode = simulationResult.errorCode;
       transaction.errorMessage = simulationResult.errorMessage;
       transaction.processedAt = new Date();

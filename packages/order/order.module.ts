@@ -16,7 +16,6 @@ import { UpdateOrderStatusUseCase } from './src/core/use-case/update-order-statu
 
 @Module({
   imports: [
-    ConfigModule,
     AuthModule,
     HttpClientModule,
     QueueModule,

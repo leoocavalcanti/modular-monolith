@@ -15,7 +15,6 @@
         "outputPath": "dist/apps/payment-api",
         "main": "apps/payment-api/main.ts",
         "tsConfig": "apps/payment-api/tsconfig.app.json",
-        "assets": ["apps/payment-api/assets"],
         "isolatedConfig": true,
         "webpackConfig": "apps/payment-api/webpack.config.js"
       },
@@ -28,13 +27,7 @@
         "production": {
           "optimization": true,
           "extractLicenses": true,
-          "inspect": false,
-          "fileReplacements": [
-            {
-              "replace": "apps/payment-api/environments/environment.ts",
-              "with": "apps/payment-api/environments/environment.prod.ts"
-            }
-          ]
+          "inspect": false
         }
       }
     },

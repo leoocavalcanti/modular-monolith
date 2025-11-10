@@ -4,8 +4,7 @@ import { runInTransaction } from 'typeorm-transactional';
 import { OrderPurchaseOrderRepository } from '../../persistence/repository/order-purchase-order.repository';
 import { OrderFulfillmentProducer } from '../../queue/producer/order-fulfillment.queue-producer';
 import { OrderService } from '../service/order.service';
-
-export type OrderStatus = 'pending_payment' | 'paid' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'payment_failed';
+import { OrderStatus } from '../enum/order-status.enum';
 
 export interface UpdateOrderStatusRequest {
   orderId: string;
@@ -109,13 +108,16 @@ export class UpdateOrderStatusUseCase {
 
   private validateStatusTransition(currentStatus: OrderStatus, newStatus: OrderStatus): void {
     const validTransitions: Record<OrderStatus, OrderStatus[]> = {
-      'pending_payment': ['paid', 'cancelled', 'payment_failed'],
-      'paid': ['processing', 'cancelled'],
-      'processing': ['shipped', 'cancelled'],
-      'shipped': ['delivered'],
-      'delivered': [], // Terminal status
-      'cancelled': [], // Terminal status
-      'payment_failed': ['paid', 'cancelled'], // Can retry payment
+      [OrderStatus.PENDING_PAYMENT]: [OrderStatus.PAID, OrderStatus.CANCELLED, OrderStatus.PAYMENT_FAILED],
+      [OrderStatus.PAID]: [OrderStatus.PROCESSING, OrderStatus.CANCELLED],
+      [OrderStatus.PROCESSING]: [OrderStatus.SHIPPED, OrderStatus.CANCELLED],
+      [OrderStatus.SHIPPED]: [OrderStatus.DELIVERED],
+      [OrderStatus.DELIVERED]: [], // Terminal status
+      [OrderStatus.CANCELLED]: [], // Terminal status
+      [OrderStatus.PAYMENT_FAILED]: [OrderStatus.PAID, OrderStatus.CANCELLED], // Can retry payment
+      [OrderStatus.PENDING]: [OrderStatus.CONFIRMED, OrderStatus.CANCELLED],
+      [OrderStatus.CONFIRMED]: [OrderStatus.PROCESSING, OrderStatus.CANCELLED],
+      [OrderStatus.REFUNDED]: [], // Terminal status
     };
 
     const allowedNextStatuses = validTransitions[currentStatus] || [];
