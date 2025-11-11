@@ -9,6 +9,24 @@ import { CreateOrderDto } from '../dto/request/create-order.dto';
 import { UpdateOrderStatusDto } from '../dto/request/update-order-status.dto';
 import { OrderResponseDto } from '../dto/response/order.dto';
 
+interface Cart {
+  id: string;
+  userId: string;
+  status: string;
+  totalAmount: number;
+  items: CartItem[];
+}
+
+interface CartItem {
+  id: string;
+  productId: string;
+  productName: string;
+  productSku: string;
+  price: number;
+  quantity: number;
+  productAttributes: Record<string, unknown>;
+}
+
 @Controller('orders')
 @UseGuards(AuthGuard)
 export class OrderController {
@@ -58,17 +76,17 @@ export class OrderController {
     });
   }
 
-  private validateCartForOrder(cart: any): void {
+  private validateCartForOrder(cart: Cart): void {
     if (!cart.items || cart.items.length === 0) {
       throw new Error('Cannot create order from empty cart');
     }
   }
 
-  private buildOrderData(userId: string, cart: any, createOrderDto: CreateOrderDto) {
+  private buildOrderData(userId: string, cart: Cart, createOrderDto: CreateOrderDto) {
     return {
       cartId: cart.id,
       userId,
-      items: cart.items.map((item: any) => ({
+      items: cart.items.map((item: CartItem) => ({
         productId: item.productId,
         productName: item.productName,
         productSku: item.productSku,

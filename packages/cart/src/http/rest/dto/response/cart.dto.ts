@@ -21,7 +21,7 @@ export class CartItemResponseDto {
   quantity: number;
 
   @Expose()
-  productAttributes: Record<string, any>;
+  productAttributes: Record<string, unknown>;
 
   @Expose()
   createdAt: Date;

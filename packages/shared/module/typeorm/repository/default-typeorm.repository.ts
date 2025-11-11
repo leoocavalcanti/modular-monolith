@@ -50,7 +50,7 @@ export abstract class DefaultTypeOrmRepository<T extends DefaultEntity<T>> {
     });
   }
 
-  async update(id: string, partialEntity: any): Promise<void> {
+  async update(id: string, partialEntity: Record<string, unknown>): Promise<void> {
     await this.repository.update(id, partialEntity as any);
   }
 
@@ -58,7 +58,7 @@ export abstract class DefaultTypeOrmRepository<T extends DefaultEntity<T>> {
     return await this.repository.remove(entity as any);
   }
 
-  async updateStatus(id: string, status: any): Promise<void> {
+  async updateStatus(id: string, status: string): Promise<void> {
     await this.repository.update(id, { status } as any);
   }
 }

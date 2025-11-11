@@ -4,6 +4,16 @@ export class AddToCartDto {
   @IsString()
   productId: string;
 
+  @IsString()
+  productName: string;
+
+  @IsString()
+  productSku: string;
+
+  @IsNumber()
+  @IsPositive()
+  price: number;
+
   @IsNumber()
   @IsPositive()
   @Min(1)
@@ -11,5 +21,5 @@ export class AddToCartDto {
 
   @IsOptional()
   @IsObject()
-  productAttributes?: Record<string, any>;
+  productAttributes?: Record<string, unknown>;
 }

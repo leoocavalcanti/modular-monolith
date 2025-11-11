@@ -1,13 +1,20 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PaymentMethod } from '../enum/payment-method.enum';
-import { PaymentStatus } from '../enum/payment-status.enum';
 
 export interface SimulationResult {
   success: boolean;
   transactionId?: string;
   errorCode?: string;
   errorMessage?: string;
-  additionalData?: Record<string, any>;
+  additionalData?: Record<string, unknown>;
+}
+
+export interface CardDetails {
+  cardNumber: string;
+  expiryMonth: number;
+  expiryYear: number;
+  cvv: string;
+  holderName: string;
 }
 
 @Injectable()
@@ -17,7 +24,7 @@ export class PaymentSimulatorService {
   async simulatePayment(
     amount: number,
     paymentMethod: PaymentMethod,
-    cardDetails?: any
+    cardDetails?: CardDetails
   ): Promise<SimulationResult> {
     this.logger.log(`Simulating payment: ${paymentMethod} - Amount: ${amount}`);
 
@@ -43,7 +50,7 @@ export class PaymentSimulatorService {
     }
   }
 
-  private async simulateCardPayment(_amount: number, cardDetails?: any): Promise<SimulationResult> {
+  private async simulateCardPayment(_amount: number, cardDetails?: CardDetails): Promise<SimulationResult> {
     if (!cardDetails || !cardDetails.cardNumber) {
       return {
         success: false,

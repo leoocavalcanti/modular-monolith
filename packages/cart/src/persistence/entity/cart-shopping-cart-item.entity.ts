@@ -23,7 +23,7 @@ export class CartShoppingCartItem extends DefaultEntity<CartShoppingCartItem> {
   quantity: number;
 
   @Column('json', { nullable: true })
-  productAttributes: Record<string, any>;
+  productAttributes: Record<string, unknown>;
 
   @ManyToOne(() => CartShoppingCart, cart => cart.items, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'cartId' })
@@ -44,7 +44,7 @@ export class CartShoppingCartItem extends DefaultEntity<CartShoppingCartItem> {
     productSku: string;
     price: number;
     quantity: number;
-    productAttributes?: Record<string, any>;
+    productAttributes?: Record<string, unknown>;
     cart?: CartShoppingCart;
   }): CartShoppingCartItem {
     const item = new CartShoppingCartItem({

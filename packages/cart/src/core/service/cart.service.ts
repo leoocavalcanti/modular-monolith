@@ -12,7 +12,7 @@ export interface AddToCartData {
   productSku: string;
   price: number;
   quantity: number;
-  productAttributes?: Record<string, any>;
+  productAttributes?: Record<string, unknown>;
 }
 
 @Injectable()

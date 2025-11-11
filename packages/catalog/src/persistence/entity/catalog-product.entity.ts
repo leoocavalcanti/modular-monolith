@@ -37,7 +37,7 @@ export class CatalogProduct extends DefaultEntity<CatalogProduct> {
   imageUrls: string[];
 
   @Column('json', { nullable: true })
-  attributes: Record<string, any>;
+  attributes: Record<string, unknown>;
 
   static create(data: {
     name: string;
@@ -48,7 +48,7 @@ export class CatalogProduct extends DefaultEntity<CatalogProduct> {
     category: ProductCategory;
     status?: ProductStatus;
     imageUrls?: string[];
-    attributes?: Record<string, any>;
+    attributes?: Record<string, unknown>;
   }): CatalogProduct {
     const product = new CatalogProduct({
       ...data,

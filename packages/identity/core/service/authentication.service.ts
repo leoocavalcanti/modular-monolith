@@ -4,6 +4,18 @@ import { compare } from 'bcrypt';
 import { UserRepository } from '../../persistence/repository/user.repository';
 import { UserUnauthorizedException } from '../exception/user-unauthorized.exception';
 
+export interface AuthUser {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+}
+
+export interface AuthResponse {
+  access_token: string;
+  user: AuthUser;
+}
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -11,7 +23,7 @@ export class AuthService {
     private readonly jwtService: JwtService
   ) {}
 
-  async signIn(email: string, password: string): Promise<{ access_token: string; user: any }> {
+  async signIn(email: string, password: string): Promise<AuthResponse> {
     const user = await this.userRepository.findOneByEmail(email);
 
     if (!user || !(await this.comparePassword(password, user.password))) {

@@ -65,7 +65,7 @@ export class PaymentTransaction extends DefaultEntity<PaymentTransaction> {
   errorMessage: string;
 
   @Column('json', { nullable: true })
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
 
 
   @Column({ nullable: true })
@@ -109,7 +109,7 @@ export class PaymentTransaction extends DefaultEntity<PaymentTransaction> {
     };
     errorCode?: string;
     errorMessage?: string;
-    metadata?: Record<string, any>;
+    metadata?: Record<string, unknown>;
     processedAt?: Date;
   }): PaymentTransaction {
     const transaction = new PaymentTransaction({
