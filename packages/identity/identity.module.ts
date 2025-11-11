@@ -10,12 +10,16 @@ import { AuthService } from './core/service/authentication.service';
 import { UserManagementService } from './core/service/user-management.service';
 import { IdentityPersistenceModule } from './persistence/identity-persistence.module';
 import { UserRepository } from './persistence/repository/user.repository';
+import { AuthController } from './http/rest/controller/auth.controller';
 
 @Module({
   imports: [
     IdentityPersistenceModule,
     PublicApiModule,
     AuthModule,
+  ],
+  controllers: [
+    AuthController,
   ],
   providers: [
     {

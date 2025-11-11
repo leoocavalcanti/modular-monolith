@@ -247,54 +247,36 @@ npx nx serve storefront-api
 - **Admin API**: http://localhost:3001 (para administradores)
 - **Payment API**: http://localhost:3002 (processamento interno)
 
-### 4. Sistema de Autenticação JWT
+### 4. Controllers e Endpoints Disponíveis
 
-Todas as APIs possuem endpoints protegidos por JWT. Para testar:
+Baseado nas APIs ativas, aqui estão os endpoints realmente disponíveis:
 
-#### 4.1. Criar um Usuário (via Admin API)
-```bash
-curl -X POST http://localhost:3001/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "admin@example.com",
-    "password": "123456",
-    "firstName": "Admin",
-    "lastName": "User"
-  }'
-```
+#### 4.1. Admin API - http://localhost:3001
+- **Catalog (Products)**: `/products` (GET, POST, PUT, DELETE)  
+- **Orders**: `/orders` (GET, POST, PUT)
+- **Health**: `/health` (GET)
+- **Payments**: `/payments/process` (POST), `/payments/:id` (GET)
 
-#### 4.2. Fazer Login e Obter Token
-```bash
-curl -X POST http://localhost:3001/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{
-    "email": "admin@example.com", 
-    "password": "123456"
-  }'
-```
+#### 4.2. Storefront API - http://localhost:3000  
+- **Catalog (Products)**: `/products` (GET, POST, PUT, DELETE)
+- **Cart**: `/cart` (GET)  
+- **Orders**: `/orders` (GET, POST, PUT)
+- **Health**: `/health` (GET)
 
-**Resposta esperada:**
+#### 4.3. Payment API - http://localhost:3002
+- **Payments**: `/payments/process` (POST), `/payments/:id` (GET)
+- **Health**: `/health` (GET)
+
+⚠️ **NOTA**: Autenticação JWT ainda em desenvolvimento - endpoints protegidos por AuthGuard podem precisar de configuração adicional.
+
+### Headers Para Requests
 ```json
 {
-  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "user": {
-    "id": "uuid",
-    "email": "admin@example.com",
-    "firstName": "Admin",
-    "lastName": "User"
-  }
+  "Content-Type": "application/json"
 }
 ```
 
-#### 4.3. Usar Token em Endpoints Protegidos
-```bash
-# Salvar token em variável
-TOKEN="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-
-# Usar token no header Authorization
-curl -H "Authorization: Bearer $TOKEN" \
-     http://localhost:3000/health
-```
+💡 **Dica**: Teste primeiro os health checks para confirmar que as APIs estão ativas.
 
 ## 🛠️ Desenvolvimento com NX
 
@@ -358,164 +340,303 @@ Primeiro, configure a variável do token:
 TOKEN="seu_token_jwt_aqui"
 ```
 
-#### 5.1. Admin API - Criação de Produtos
-```bash
-# 1. Criar produto via Admin API
-curl -X POST http://localhost:3001/products \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "iPhone 15 Pro",
-    "description": "Smartphone Apple iPhone 15 Pro 128GB",
-    "price": 7999.99,
-    "stock": 50,
-    "sku": "IPH15PRO128",
-    "category": "ELECTRONICS",
-    "imageUrls": ["https://example.com/iphone15pro.jpg"],
-    "attributes": {
-      "color": "Natural Titanium",
-      "storage": "128GB",
-      "brand": "Apple"
-    }
-  }'
+#### 5.1. Admin API - Gestão de Produtos
 
-# 2. Listar produtos criados
-curl -H "Authorization: Bearer $TOKEN" \
-     http://localhost:3001/products
+##### 1. Health Check Admin API
+**Método:** `GET`  
+**URL:** `http://localhost:3001/health`  
+**Headers:** Nenhum necessário
 
-# 3. Verificar health do Admin API
-curl http://localhost:3001/health
+##### 2. Listar Produtos  
+**Método:** `GET`  
+**URL:** `http://localhost:3001/products`  
+**Headers:**
+```json
+{
+  "Content-Type": "application/json"
+}
+```
+
+##### 3. Criar Produto (Requer Auth)
+**Método:** `POST`  
+**URL:** `http://localhost:3001/products`  
+**Headers:**
+```json
+{
+  "Content-Type": "application/json"
+}
+```
+**Body (JSON):**
+```json
+{
+  "name": "iPhone 15 Pro",
+  "description": "Smartphone Apple iPhone 15 Pro 128GB",
+  "price": 7999.99,
+  "stock": 50,
+  "sku": "IPH15PRO128",
+  "category": "ELECTRONICS",
+  "imageUrls": ["https://example.com/iphone15pro.jpg"],
+  "attributes": {
+    "color": "Natural Titanium",
+    "storage": "128GB",
+    "brand": "Apple"
+  }
+}
+```
+
+##### 4. Atualizar Produto (Requer Auth)
+**Método:** `PUT`  
+**URL:** `http://localhost:3001/products/{{product_id}}`  
+**Headers:**
+```json
+{
+  "Content-Type": "application/json"
+}
+```
+**Body (JSON):**
+```json
+{
+  "name": "iPhone 15 Pro Updated",
+  "price": 7499.99,
+  "stock": 75
+}
+```
+
+##### 5. Deletar Produto (Requer Auth)
+**Método:** `DELETE`  
+**URL:** `http://localhost:3001/products/{{product_id}}`  
+**Headers:**
+```json
+{
+  "Content-Type": "application/json"
+}
 ```
 
 #### 5.2. Storefront API - Experiência do Cliente
-```bash
-# 1. Listar produtos disponíveis
-curl -H "Authorization: Bearer $TOKEN" \
-     http://localhost:3000/products
 
-# 2. Buscar produtos por categoria
-curl -H "Authorization: Bearer $TOKEN" \
-     "http://localhost:3000/products?category=ELECTRONICS"
-
-# 3. Ver carrinho vazio
-curl -H "Authorization: Bearer $TOKEN" \
-     http://localhost:3000/cart
-
-# 4. Adicionar produto ao carrinho
-curl -X POST http://localhost:3000/cart/items \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "productId": "id_do_produto_criado",
-    "productName": "iPhone 15 Pro", 
-    "productSku": "IPH15PRO128",
-    "price": 7999.99,
-    "quantity": 2,
-    "productAttributes": {
-      "color": "Natural Titanium",
-      "storage": "128GB"
-    }
-  }'
-
-# 5. Ver carrinho com itens
-curl -H "Authorization: Bearer $TOKEN" \
-     http://localhost:3000/cart
-
-# 6. Atualizar quantidade do item
-curl -X PUT http://localhost:3000/cart/items/id_do_produto \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"quantity": 1}'
-
-# 7. Criar pedido (checkout) - COMUNICAÇÃO INTER-MÓDULOS
-curl -X POST http://localhost:3000/orders \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "shippingAddress": {
-      "street": "Av. Paulista, 1000",
-      "city": "São Paulo", 
-      "state": "SP",
-      "zipCode": "01310-100",
-      "country": "Brazil"
-    },
-    "billingAddress": {
-      "street": "Av. Paulista, 1000",
-      "city": "São Paulo",
-      "state": "SP", 
-      "zipCode": "01310-100",
-      "country": "Brazil"
-    },
-    "paymentMethod": "credit_card",
-    "cardDetails": {
-      "cardNumber": "4111111111111111",
-      "expiryMonth": "12",
-      "expiryYear": "2025",
-      "cvv": "123",
-      "holderName": "João Silva"
-    },
-    "customerEmail": "joao@exemplo.com"
-  }'
-
-# 8. Listar pedidos do usuário
-curl -H "Authorization: Bearer $TOKEN" \
-     http://localhost:3000/orders
-
-# 9. Ver detalhes de um pedido específico
-curl -H "Authorization: Bearer $TOKEN" \
-     http://localhost:3000/orders/id_do_pedido
-
-# 10. Verificar health do Storefront API
-curl http://localhost:3000/health
+##### 1. Listar Produtos Disponíveis
+**Método:** `GET`  
+**URL:** `http://localhost:3000/products`  
+**Headers:**
+```json
+{
+  "Authorization": "Bearer {{access_token}}"
+}
 ```
 
+##### 2. Buscar Produtos por Categoria
+**Método:** `GET`  
+**URL:** `http://localhost:3000/products?category=ELECTRONICS`  
+**Headers:**
+```json
+{
+  "Authorization": "Bearer {{access_token}}"
+}
+```
+
+##### 3. Ver Carrinho (Vazio)
+**Método:** `GET`  
+**URL:** `http://localhost:3000/cart`  
+**Headers:**
+```json
+{
+  "Authorization": "Bearer {{access_token}}"
+}
+```
+
+##### 4. Adicionar Produto ao Carrinho
+**Método:** `POST`  
+**URL:** `http://localhost:3000/cart/items`  
+**Headers:**
+```json
+{
+  "Authorization": "Bearer {{access_token}}",
+  "Content-Type": "application/json"
+}
+```
+**Body (JSON):**
+```json
+{
+  "productId": "id_do_produto_criado",
+  "productName": "iPhone 15 Pro", 
+  "productSku": "IPH15PRO128",
+  "price": 7999.99,
+  "quantity": 2,
+  "productAttributes": {
+    "color": "Natural Titanium",
+    "storage": "128GB"
+  }
+}
+```
+
+##### 5. Ver Carrinho com Itens
+**Método:** `GET`  
+**URL:** `http://localhost:3000/cart`  
+**Headers:**
+```json
+{
+  "Authorization": "Bearer {{access_token}}"
+}
+```
+
+##### 6. Atualizar Quantidade do Item
+**Método:** `PUT`  
+**URL:** `http://localhost:3000/cart/items/{{product_id}}`  
+**Headers:**
+```json
+{
+  "Authorization": "Bearer {{access_token}}",
+  "Content-Type": "application/json"
+}
+```
+**Body (JSON):**
+```json
+{
+  "quantity": 1
+}
+```
+
+##### 7. Criar Pedido (Checkout) - 🔗 COMUNICAÇÃO INTER-MÓDULOS
+**Método:** `POST`  
+**URL:** `http://localhost:3000/orders`  
+**Headers:**
+```json
+{
+  "Authorization": "Bearer {{access_token}}",
+  "Content-Type": "application/json"
+}
+```
+**Body (JSON):**
+```json
+{
+  "shippingAddress": {
+    "street": "Av. Paulista, 1000",
+    "city": "São Paulo", 
+    "state": "SP",
+    "zipCode": "01310-100",
+    "country": "Brazil"
+  },
+  "billingAddress": {
+    "street": "Av. Paulista, 1000",
+    "city": "São Paulo",
+    "state": "SP", 
+    "zipCode": "01310-100",
+    "country": "Brazil"
+  },
+  "paymentMethod": "credit_card",
+  "cardDetails": {
+    "cardNumber": "4111111111111111",
+    "expiryMonth": "12",
+    "expiryYear": "2025",
+    "cvv": "123",
+    "holderName": "João Silva"
+  },
+  "customerEmail": "joao@exemplo.com"
+}
+```
+
+##### 8. Listar Pedidos do Usuário
+**Método:** `GET`  
+**URL:** `http://localhost:3000/orders`  
+**Headers:**
+```json
+{
+  "Authorization": "Bearer {{access_token}}"
+}
+```
+
+##### 9. Ver Detalhes de um Pedido
+**Método:** `GET`  
+**URL:** `http://localhost:3000/orders/{{order_id}}`  
+**Headers:**
+```json
+{
+  "Authorization": "Bearer {{access_token}}"
+}
+```
+
+##### 10. Health Check Storefront API
+**Método:** `GET`  
+**URL:** `http://localhost:3000/health`  
+**Headers:** Nenhum necessário
+
 #### 5.3. Payment API - Processamento de Pagamentos
-```bash
-# 1. Processar pagamento diretamente
-curl -X POST http://localhost:3002/payments/process \
-  -H "Content-Type: application/json" \
-  -d '{
-    "amount": 7999.99,
-    "currency": "BRL",
-    "paymentMethod": "credit_card",
-    "cardDetails": {
-      "cardNumber": "4111111111111111",
-      "expiryMonth": "12",
-      "expiryYear": "2025", 
-      "cvv": "123",
-      "cardholderName": "João Silva"
-    },
-    "orderId": "id_do_pedido",
-    "customerEmail": "joao@exemplo.com"
-  }'
 
-# 2. Consultar status do pagamento
-curl http://localhost:3002/payments/id_do_pagamento
+##### 1. Processar Pagamento com Cartão
+**Método:** `POST`  
+**URL:** `http://localhost:3002/payments/process`  
+**Headers:**
+```json
+{
+  "Content-Type": "application/json"
+}
+```
+**Body (JSON):**
+```json
+{
+  "amount": 7999.99,
+  "currency": "BRL",
+  "paymentMethod": "credit_card",
+  "cardDetails": {
+    "cardNumber": "4111111111111111",
+    "expiryMonth": "12",
+    "expiryYear": "2025", 
+    "cvv": "123",
+    "cardholderName": "João Silva"
+  },
+  "orderId": "id_do_pedido",
+  "customerEmail": "joao@exemplo.com"
+}
+```
 
-# 3. Verificar health do Payment API
-curl http://localhost:3002/health
+##### 2. Consultar Status do Pagamento
+**Método:** `GET`  
+**URL:** `http://localhost:3002/payments/{{payment_id}}`  
+**Headers:** Nenhum necessário
 
-# 4. Simular pagamento PIX
-curl -X POST http://localhost:3002/payments/process \
-  -H "Content-Type: application/json" \
-  -d '{
-    "amount": 999.99,
-    "currency": "BRL", 
-    "paymentMethod": "pix",
-    "orderId": "id_do_pedido_pix",
-    "customerEmail": "cliente@exemplo.com"
-  }'
+##### 3. Health Check Payment API
+**Método:** `GET`  
+**URL:** `http://localhost:3002/health`  
+**Headers:** Nenhum necessário
 
-# 5. Simular pagamento Boleto
-curl -X POST http://localhost:3002/payments/process \
-  -H "Content-Type: application/json" \
-  -d '{
-    "amount": 1500.00,
-    "currency": "BRL",
-    "paymentMethod": "boleto", 
-    "orderId": "id_do_pedido_boleto",
-    "customerEmail": "cliente@exemplo.com"
-  }'
+##### 4. Simular Pagamento PIX
+**Método:** `POST`  
+**URL:** `http://localhost:3002/payments/process`  
+**Headers:**
+```json
+{
+  "Content-Type": "application/json"
+}
+```
+**Body (JSON):**
+```json
+{
+  "amount": 999.99,
+  "currency": "BRL", 
+  "paymentMethod": "pix",
+  "orderId": "id_do_pedido_pix",
+  "customerEmail": "cliente@exemplo.com"
+}
+```
+
+##### 5. Simular Pagamento Boleto
+**Método:** `POST`  
+**URL:** `http://localhost:3002/payments/process`  
+**Headers:**
+```json
+{
+  "Content-Type": "application/json"
+}
+```
+**Body (JSON):**
+```json
+{
+  "amount": 1500.00,
+  "currency": "BRL",
+  "paymentMethod": "boleto", 
+  "orderId": "id_do_pedido_boleto",
+  "customerEmail": "cliente@exemplo.com"
+}
 ```
 
 ### 6. Teste de Comunicação Entre Módulos
@@ -541,83 +662,188 @@ npx nx serve payment-api --verbose
 ```
 
 #### 6.2. Admin → Payment (via Public API Client)
-```bash
-# 1. Admin consulta status de pagamentos
-curl -H "Authorization: Bearer $TOKEN" \
-     http://localhost:3001/payments
 
-# 2. Admin consulta pagamentos por pedido
-curl -H "Authorization: Bearer $TOKEN" \
-     http://localhost:3001/payments/order/id_do_pedido
+##### 1. Admin Consulta Status de Pagamentos
+**Método:** `GET`  
+**URL:** `http://localhost:3001/payments`  
+**Headers:**
+```json
+{
+  "Authorization": "Bearer {{access_token}}"
+}
+```
+
+##### 2. Admin Consulta Pagamentos por Pedido
+**Método:** `GET`  
+**URL:** `http://localhost:3001/payments/order/{{order_id}}`  
+**Headers:**
+```json
+{
+  "Authorization": "Bearer {{access_token}}"
+}
 ```
 
 ### 7. Simulação de Cenários de Pagamento
 
-#### 7.1. Cartão Aprovado
-```bash
-curl -X POST http://localhost:3002/payments/process \
-  -H "Content-Type: application/json" \
-  -d '{
-    "amount": 100.00,
-    "paymentMethod": "credit_card",
-    "cardDetails": {
-      "cardNumber": "4111111111111111"
-    },
-    "orderId": "test-approved",
-    "customerEmail": "test@exemplo.com"
-  }'
+#### 7.1. Cartão Aprovado (Sucesso)
+**Método:** `POST`  
+**URL:** `http://localhost:3002/payments/process`  
+**Headers:**
+```json
+{
+  "Content-Type": "application/json"
+}
+```
+**Body (JSON):**
+```json
+{
+  "amount": 100.00,
+  "paymentMethod": "credit_card",
+  "cardDetails": {
+    "cardNumber": "4111111111111111",
+    "expiryMonth": "12",
+    "expiryYear": "2025",
+    "cvv": "123",
+    "cardholderName": "Teste Sucesso"
+  },
+  "orderId": "test-approved",
+  "customerEmail": "test@exemplo.com"
+}
 ```
 
-#### 7.2. Cartão com Saldo Insuficiente
-```bash
-curl -X POST http://localhost:3002/payments/process \
-  -H "Content-Type: application/json" \
-  -d '{
-    "amount": 100.00, 
-    "paymentMethod": "credit_card",
-    "cardDetails": {
-      "cardNumber": "4111111111110000"
-    },
-    "orderId": "test-insufficient",
-    "customerEmail": "test@exemplo.com"
-  }'
+#### 7.2. Cartão com Saldo Insuficiente (Falha)
+**Método:** `POST`  
+**URL:** `http://localhost:3002/payments/process`  
+**Headers:**
+```json
+{
+  "Content-Type": "application/json"
+}
+```
+**Body (JSON):**
+```json
+{
+  "amount": 100.00, 
+  "paymentMethod": "credit_card",
+  "cardDetails": {
+    "cardNumber": "4111111111110000",
+    "expiryMonth": "12",
+    "expiryYear": "2025",
+    "cvv": "123",
+    "cardholderName": "Teste Saldo"
+  },
+  "orderId": "test-insufficient",
+  "customerEmail": "test@exemplo.com"
+}
 ```
 
-#### 7.3. Cartão Recusado
-```bash
-curl -X POST http://localhost:3002/payments/process \
-  -H "Content-Type: application/json" \
-  -d '{
-    "amount": 100.00,
-    "paymentMethod": "credit_card", 
-    "cardDetails": {
-      "cardNumber": "4111111111111111"
-    },
-    "orderId": "test-declined",
-    "customerEmail": "test@exemplo.com"
-  }'
+#### 7.3. Cartão Recusado (Falha)
+**Método:** `POST`  
+**URL:** `http://localhost:3002/payments/process`  
+**Headers:**
+```json
+{
+  "Content-Type": "application/json"
+}
+```
+**Body (JSON):**
+```json
+{
+  "amount": 100.00,
+  "paymentMethod": "credit_card", 
+  "cardDetails": {
+    "cardNumber": "4111111111111111",
+    "expiryMonth": "12",
+    "expiryYear": "2025",
+    "cvv": "123",
+    "cardholderName": "Teste Recusa"
+  },
+  "orderId": "test-declined",
+  "customerEmail": "test@exemplo.com"
+}
 ```
 
 ### 8. Teste de Gestão de Pedidos (Admin API)
 
-```bash
-# 1. Atualizar status de pedido
-curl -X PUT http://localhost:3001/orders/id_do_pedido/status \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "status": "SHIPPED",
-    "trackingNumber": "BR123456789BR",
-    "notes": "Pedido enviado via Correios"
-  }'
+#### 8.1. Atualizar Status de Pedido
+**Método:** `PUT`  
+**URL:** `http://localhost:3001/orders/{{order_id}}/status`  
+**Headers:**
+```json
+{
+  "Authorization": "Bearer {{access_token}}",
+  "Content-Type": "application/json"
+}
+```
+**Body (JSON):**
+```json
+{
+  "status": "SHIPPED",
+  "trackingNumber": "BR123456789BR",
+  "notes": "Pedido enviado via Correios"
+}
+```
 
-# 2. Listar todos os pedidos (Admin)
-curl -H "Authorization: Bearer $TOKEN" \
-     http://localhost:3001/orders
+#### 8.2. Listar Todos os Pedidos (Admin)
+**Método:** `GET`  
+**URL:** `http://localhost:3001/orders`  
+**Headers:**
+```json
+{
+  "Authorization": "Bearer {{access_token}}"
+}
+```
 
-# 3. Filtrar pedidos por status
-curl -H "Authorization: Bearer $TOKEN" \
-     "http://localhost:3001/orders?status=SHIPPED"
+#### 8.3. Filtrar Pedidos por Status
+**Método:** `GET`  
+**URL:** `http://localhost:3001/orders?status=SHIPPED`  
+**Headers:**
+```json
+{
+  "Authorization": "Bearer {{access_token}}"
+}
+```
+
+## 📱 Collection do Postman
+
+Para facilitar os testes, você pode criar uma Collection no Postman com os seguintes environments:
+
+### Environment Variables
+Crie um Environment no Postman com essas variáveis:
+
+```json
+{
+  "base_url_admin": "http://localhost:3001",
+  "base_url_storefront": "http://localhost:3000", 
+  "base_url_payment": "http://localhost:3002",
+  "access_token": "",
+  "user_email": "admin@example.com",
+  "user_password": "123456"
+}
+```
+
+### Ordem de Testes Recomendada
+
+1. **Registro**: POST `{{base_url_admin}}/auth/register`
+2. **Login**: POST `{{base_url_admin}}/auth/login` (salva o token automaticamente)
+3. **Health Checks**: GET em todas as APIs `/health`
+4. **Criar Produto**: POST `{{base_url_admin}}/products`
+5. **Ver Produtos**: GET `{{base_url_storefront}}/products`
+6. **Carrinho**: GET/POST/PUT `{{base_url_storefront}}/cart`
+7. **Checkout**: POST `{{base_url_storefront}}/orders`
+8. **Pagamento**: POST `{{base_url_payment}}/payments/process`
+9. **Gestão Admin**: PUT `{{base_url_admin}}/orders/{{order_id}}/status`
+
+### Auto-Tests (Postman Scripts)
+
+Adicione este script no **Tests** tab do endpoint de login para salvar o token automaticamente:
+
+```javascript
+if (responseCode.code === 200) {
+    const response = pm.response.json();
+    pm.environment.set("access_token", response.access_token);
+    console.log("Token salvo automaticamente:", response.access_token);
+}
 ```
 
 ## Seguindo ARCHITECTURE-GUIDELINES.md
@@ -818,14 +1044,27 @@ O sistema simula diferentes gateways de pagamento:
 
 ## 📋 Resumo do Fluxo de Teste
 
+### 🚀 Preparação (Terminal)
 1. **Preparar ambiente**: `yarn install` + `docker-compose up -d`
 2. **Iniciar APIs**: `npx nx serve admin-api` + `npx nx serve payment-api` + `npx nx serve storefront-api`
-3. **Registrar usuário**: POST `/auth/register` 
-4. **Fazer login**: POST `/auth/login` → obter TOKEN
-5. **Criar produtos**: POST `/products` (Admin API)
-6. **Testar carrinho**: GET `/cart`, POST `/cart/items` (Storefront API)
-7. **Fazer checkout**: POST `/orders` (triggers Payment API communication)
-8. **Verificar pagamento**: GET `/payments/:id` (Payment API)
-9. **Gerenciar pedidos**: PUT `/orders/:id/status` (Admin API)
 
-**✅ Sistema completo com autenticação JWT, comunicação entre módulos e arquitetura modular!**
+### 📱 Testes no Postman
+1. **Environment**: Configure as variáveis base_url_* e access_token
+2. **Registrar usuário**: POST `{{base_url_admin}}/auth/register` 
+3. **Fazer login**: POST `{{base_url_admin}}/auth/login` → Token salvo automaticamente
+4. **Health checks**: GET `/health` em todas as APIs
+5. **Criar produtos**: POST `{{base_url_admin}}/products`
+6. **Testar carrinho**: GET/POST `{{base_url_storefront}}/cart`
+7. **Fazer checkout**: POST `{{base_url_storefront}}/orders` (🔗 triggers Payment API communication)
+8. **Verificar pagamento**: GET `{{base_url_payment}}/payments/{{payment_id}}`
+9. **Gerenciar pedidos**: PUT `{{base_url_admin}}/orders/{{order_id}}/status`
+
+### 🎯 Cenários de Teste
+- **✅ Cartão Aprovado**: `4111111111111111`
+- **❌ Saldo Insuficiente**: `4111111111110000`  
+- **❌ Cartão Recusado**: `4111111111111111` (terminado em 1)
+- **💰 PIX**: Gera QR Code automático
+- **🧾 Boleto**: Gera código de barras automático
+
+**✅ Sistema completo com autenticação JWT, comunicação entre módulos e arquitetura modular!**  
+**🔧 Pronto para usar no Postman com Environment Variables e Auto-Tests!**

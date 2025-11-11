@@ -5,10 +5,10 @@ export const paymentConfig = registerAs('payment', () => ({
   environment: process.env.NODE_ENV || 'development',
   database: {
     host: process.env.PAYMENT_DB_HOST || 'localhost',
-    port: parseInt(process.env.PAYMENT_DB_PORT || '5432'),
+    port: parseInt(process.env.PAYMENT_DB_PORT || '5433'),
     username: process.env.PAYMENT_DB_USERNAME || 'postgres',
     password: process.env.PAYMENT_DB_PASSWORD || 'postgres',
-    database: process.env.PAYMENT_DB_DATABASE || 'ecommerce_payment',
+    database: process.env.PAYMENT_DB_DATABASE || 'ecommerce_payment_db',
   },
   webhook: {
     secret: process.env.PAYMENT_WEBHOOK_SECRET || 'webhook-secret-key',

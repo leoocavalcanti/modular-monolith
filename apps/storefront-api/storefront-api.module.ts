@@ -4,8 +4,8 @@ import { LoggerModule } from '@tlc/shared-module/logger';
 import { CatalogModule } from '@tlc/catalog';
 import { CartModule } from '@tlc/cart';
 import { OrderModule } from '@tlc/order';
-// import { IdentityModule } from '@tlc/identity';
-import { storefrontConfig, catalogConfig, cartConfig, orderConfig } from './config';
+import { IdentityModule } from '@tlc/identity';
+import { storefrontConfig, catalogConfig, cartConfig, orderConfig, identityConfig } from './config';
 
 @Module({
   imports: [
@@ -13,9 +13,9 @@ import { storefrontConfig, catalogConfig, cartConfig, orderConfig } from './conf
     CatalogModule,
     CartModule,
     OrderModule,
-    // IdentityModule,
+    IdentityModule,
     ConfigModule.forRoot({
-      load: [storefrontConfig, catalogConfig, cartConfig, orderConfig],
+      load: [storefrontConfig, catalogConfig, cartConfig, orderConfig, identityConfig],
       isGlobal: true,
     }),
   ],

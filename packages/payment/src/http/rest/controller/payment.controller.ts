@@ -6,7 +6,7 @@ import { PaymentResponseDto, ProcessPaymentResponseDto } from '../dto/response/p
 import { PaymentStatus } from '../../../core/enum/payment-status.enum';
 import { PaymentMethod } from '../../../core/enum/payment-method.enum';
 
-@Controller()
+@Controller('payments')
 export class PaymentController {
   constructor(
     private readonly processPaymentUseCase: ProcessPaymentUseCase
@@ -17,7 +17,7 @@ export class PaymentController {
     return { status: 'ok' };
   }
 
-  @Post('payments/process')
+  @Post('process')
   async processPayment(@Body() processPaymentDto: ProcessPaymentDto): Promise<ProcessPaymentResponseDto> {
     const request = this.buildProcessPaymentRequest(processPaymentDto);
     const result = await this.processPaymentUseCase.execute(request);
@@ -43,7 +43,7 @@ export class PaymentController {
     };
   }
 
-  @Get('payments/:id')
+  @Get(':id')
   async getPayment(@Param('id') id: string): Promise<PaymentResponseDto> {
     // TODO: Implementar GetPaymentUseCase
     return this.createMockPaymentResponse(id);

@@ -68,7 +68,7 @@ export class OrderController {
     return {
       cartId: cart.id,
       userId,
-      items: cart.items.map(item => ({
+      items: cart.items.map((item: any) => ({
         productId: item.productId,
         productName: item.productName,
         productSku: item.productSku,
