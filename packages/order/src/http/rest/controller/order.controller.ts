@@ -45,14 +45,27 @@ export class OrderController {
   @Post()
   async createOrder(@Body() createOrderDto: CreateOrderDto): Promise<OrderResponseDto> {
     const userId = this.clsService.get('userId');
-    
     const cart = await this.cartFacade.getUserActiveCart(userId);
     
+    this.validateCartForOrder(cart);
+    const orderData = this.buildOrderData(userId, cart, createOrderDto);
+    const order = await this.orderService.createOrder(orderData);
+    
+    await this.cartFacade.completeCart(cart.id);
+    
+    return plainToInstance(OrderResponseDto, order, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  private validateCartForOrder(cart: any): void {
     if (!cart.items || cart.items.length === 0) {
       throw new Error('Cannot create order from empty cart');
     }
+  }
 
-    const orderData = {
+  private buildOrderData(userId: string, cart: any, createOrderDto: CreateOrderDto) {
+    return {
       cartId: cart.id,
       userId,
       items: cart.items.map(item => ({
@@ -69,14 +82,6 @@ export class OrderController {
       cardDetails: createOrderDto.cardDetails,
       customerEmail: createOrderDto.customerEmail,
     };
-
-    const order = await this.orderService.createOrder(orderData);
-
-    await this.cartFacade.completeCart(cart.id);
-
-    return plainToInstance(OrderResponseDto, order, {
-      excludeExtraneousValues: true,
-    });
   }
 
   @Put(':id/status')

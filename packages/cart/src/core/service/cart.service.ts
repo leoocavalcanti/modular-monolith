@@ -136,6 +136,7 @@ export class CartService {
     return this.cartRepository.save(cart);
   }
 
+  @Transactional({ connectionName: 'cart' })
   private async createCart(userId: string): Promise<CartShoppingCart> {
     const cart = new CartShoppingCart({
       userId: userId,
@@ -146,6 +147,7 @@ export class CartService {
     return this.cartRepository.save(cart);
   }
 
+  @Transactional({ connectionName: 'cart' })
   private async updateCartTotal(cartId: string): Promise<CartShoppingCart> {
     const cart = await this.getCartById(cartId);
     cart.totalAmount = cart.calculateTotal();

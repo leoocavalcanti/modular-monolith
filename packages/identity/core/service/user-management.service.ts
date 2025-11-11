@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Transactional } from 'typeorm-transactional';
 import { User } from '../../persistence/entity/user.entity';
 import { UserRepository } from '../../persistence/repository/user.repository';
 import { hash } from 'bcrypt';
@@ -16,8 +17,9 @@ export const PASSWORD_HASH_SALT = 10;
 @Injectable()
 export class UserManagementService {
   constructor(private readonly userRepository: UserRepository) {}
+  @Transactional({ connectionName: 'identity' })
   async create(user: CreateUserDto) {
-    const newUser = new User({
+    const newUser = User.create({
       ...user,
       password: await hash(user.password, PASSWORD_HASH_SALT),
     });

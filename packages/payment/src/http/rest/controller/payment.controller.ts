@@ -19,28 +19,37 @@ export class PaymentController {
 
   @Post('payments/process')
   async processPayment(@Body() processPaymentDto: ProcessPaymentDto): Promise<ProcessPaymentResponseDto> {
-    const result = await this.processPaymentUseCase.execute({
-      amount: processPaymentDto.amount,
-      paymentMethod: processPaymentDto.paymentMethod,
-      orderId: processPaymentDto.orderId,
-      customerEmail: processPaymentDto.customerEmail,
-      cardDetails: processPaymentDto.cardDetails ? {
-        cardNumber: processPaymentDto.cardDetails.cardNumber,
-        expiryMonth: processPaymentDto.cardDetails.expiryMonth,
-        expiryYear: processPaymentDto.cardDetails.expiryYear,
-        cvv: processPaymentDto.cardDetails.cvv,
-        holderName: processPaymentDto.cardDetails.cardholderName || 'Unknown'
-      } : undefined,
-    });
-
+    const request = this.buildProcessPaymentRequest(processPaymentDto);
+    const result = await this.processPaymentUseCase.execute(request);
+    
     return plainToInstance(ProcessPaymentResponseDto, result, {
       excludeExtraneousValues: true,
     });
   }
 
+  private buildProcessPaymentRequest(dto: ProcessPaymentDto) {
+    return {
+      amount: dto.amount,
+      paymentMethod: dto.paymentMethod,
+      orderId: dto.orderId,
+      customerEmail: dto.customerEmail,
+      cardDetails: dto.cardDetails ? {
+        cardNumber: dto.cardDetails.cardNumber,
+        expiryMonth: dto.cardDetails.expiryMonth,
+        expiryYear: dto.cardDetails.expiryYear,
+        cvv: dto.cardDetails.cvv,
+        holderName: dto.cardDetails.cardholderName || 'Unknown'
+      } : undefined,
+    };
+  }
+
   @Get('payments/:id')
   async getPayment(@Param('id') id: string): Promise<PaymentResponseDto> {
     // TODO: Implementar GetPaymentUseCase
+    return this.createMockPaymentResponse(id);
+  }
+
+  private createMockPaymentResponse(id: string): PaymentResponseDto {
     return {
       id,
       orderId: 'unknown',
