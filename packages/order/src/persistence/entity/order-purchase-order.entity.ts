@@ -6,9 +6,6 @@ import { DefaultEntity } from '@tlc/shared-module/typeorm';
 
 @Entity({ name: 'OrderPurchaseOrder' })
 export class OrderPurchaseOrder extends DefaultEntity<OrderPurchaseOrder> {
-  constructor(data: Partial<OrderPurchaseOrder>) {
-    super(data);
-  }
   @Column()
   orderNumber: string;
 
@@ -89,5 +86,49 @@ export class OrderPurchaseOrder extends DefaultEntity<OrderPurchaseOrder> {
 
   calculateTotal(): number {
     return this.calculateSubtotal() + this.taxAmount + this.shippingAmount;
+  }
+
+  static create(data: {
+    orderNumber: string;
+    userId: string;
+    cartId: string;
+    status?: OrderStatus;
+    paymentStatus?: PaymentStatus;
+    paymentId?: string;
+    paymentTransactionId?: string;
+    trackingNumber?: string;
+    customerEmail?: string;
+    notes?: string;
+    estimatedDeliveryDate?: Date;
+    totalAmount: number;
+    taxAmount?: number;
+    shippingAmount?: number;
+    shippingAddress: {
+      street: string;
+      city: string;
+      state: string;
+      zipCode: string;
+      country: string;
+    };
+    billingAddress: {
+      street: string;
+      city: string;
+      state: string;
+      zipCode: string;
+      country: string;
+    };
+    items?: OrderPurchaseOrderItem[];
+    metadata?: Record<string, any>;
+  }): OrderPurchaseOrder {
+    const order = new OrderPurchaseOrder({
+      ...data,
+      status: data.status || OrderStatus.PENDING,
+      paymentStatus: data.paymentStatus || PaymentStatus.PENDING,
+      taxAmount: data.taxAmount || 0,
+      shippingAmount: data.shippingAmount || 0,
+      items: data.items || [],
+      metadata: data.metadata || {},
+    } as Partial<OrderPurchaseOrder>);
+    return order;
   }
 }

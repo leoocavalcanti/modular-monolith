@@ -4,9 +4,6 @@ import { DefaultEntity } from '@tlc/shared-module/typeorm';
 
 @Entity({ name: 'CartShoppingCartItem' })
 export class CartShoppingCartItem extends DefaultEntity<CartShoppingCartItem> {
-  constructor(data: Partial<CartShoppingCartItem>) {
-    super(data);
-  }
   @Column()
   cartId: string;
 
@@ -38,5 +35,22 @@ export class CartShoppingCartItem extends DefaultEntity<CartShoppingCartItem> {
 
   get totalPrice(): number {
     return this.getSubtotal();
+  }
+
+  static create(data: {
+    cartId: string;
+    productId: string;
+    productName: string;
+    productSku: string;
+    price: number;
+    quantity: number;
+    productAttributes?: Record<string, any>;
+    cart?: CartShoppingCart;
+  }): CartShoppingCartItem {
+    const item = new CartShoppingCartItem({
+      ...data,
+      productAttributes: data.productAttributes || {},
+    } as Partial<CartShoppingCartItem>);
+    return item;
   }
 }

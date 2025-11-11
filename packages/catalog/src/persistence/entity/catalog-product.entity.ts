@@ -5,9 +5,6 @@ import { DefaultEntity } from '@tlc/shared-module/typeorm';
 
 @Entity({ name: 'CatalogProduct' })
 export class CatalogProduct extends DefaultEntity<CatalogProduct> {
-  constructor(data: Partial<CatalogProduct>) {
-    super(data);
-  }
   @Column()
   name: string;
 
@@ -42,4 +39,24 @@ export class CatalogProduct extends DefaultEntity<CatalogProduct> {
   @Column('json', { nullable: true })
   attributes: Record<string, any>;
 
+  static create(data: {
+    name: string;
+    description?: string;
+    price: number;
+    stock?: number;
+    sku: string;
+    category: ProductCategory;
+    status?: ProductStatus;
+    imageUrls?: string[];
+    attributes?: Record<string, any>;
+  }): CatalogProduct {
+    const product = new CatalogProduct({
+      ...data,
+      stock: data.stock || 0,
+      status: data.status || ProductStatus.DRAFT,
+      imageUrls: data.imageUrls || [],
+      attributes: data.attributes || {},
+    } as Partial<CatalogProduct>);
+    return product;
+  }
 }

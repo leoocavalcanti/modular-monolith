@@ -82,4 +82,45 @@ export class PaymentTransaction extends DefaultEntity<PaymentTransaction> {
   isPending(): boolean {
     return this.status === PaymentStatus.PENDING || this.status === PaymentStatus.PROCESSING;
   }
+
+  static create(data: {
+    orderId: string;
+    amount: number;
+    currency?: string;
+    paymentMethod: PaymentMethod;
+    status?: PaymentStatus;
+    transactionId?: string;
+    gatewayReference?: string;
+    customerEmail: string;
+    cardDetails?: {
+      lastFourDigits?: string;
+      cardBrand?: string;
+      cardholderName?: string;
+    };
+    pixDetails?: {
+      pixKey?: string;
+      qrCode?: string;
+      expiresAt?: Date;
+    };
+    boletoDetails?: {
+      barcode?: string;
+      digitalLine?: string;
+      expiresAt?: Date;
+    };
+    errorCode?: string;
+    errorMessage?: string;
+    metadata?: Record<string, any>;
+    processedAt?: Date;
+  }): PaymentTransaction {
+    const transaction = new PaymentTransaction({
+      ...data,
+      currency: data.currency || 'BRL',
+      status: data.status || PaymentStatus.PENDING,
+      cardDetails: data.cardDetails || {},
+      pixDetails: data.pixDetails || {},
+      boletoDetails: data.boletoDetails || {},
+      metadata: data.metadata || {},
+    } as Partial<PaymentTransaction>);
+    return transaction;
+  }
 }

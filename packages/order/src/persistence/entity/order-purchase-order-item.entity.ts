@@ -4,9 +4,6 @@ import { DefaultEntity } from '@tlc/shared-module/typeorm';
 
 @Entity({ name: 'OrderPurchaseOrderItem' })
 export class OrderPurchaseOrderItem extends DefaultEntity<OrderPurchaseOrderItem> {
-  constructor(data: Partial<OrderPurchaseOrderItem>) {
-    super(data);
-  }
   @Column()
   orderId: string;
 
@@ -38,5 +35,22 @@ export class OrderPurchaseOrderItem extends DefaultEntity<OrderPurchaseOrderItem
 
   get price(): number {
     return this.unitPrice;
+  }
+
+  static create(data: {
+    orderId: string;
+    productId: string;
+    productName: string;
+    productSku: string;
+    unitPrice: number;
+    quantity: number;
+    productAttributes?: Record<string, any>;
+    order?: OrderPurchaseOrder;
+  }): OrderPurchaseOrderItem {
+    const item = new OrderPurchaseOrderItem({
+      ...data,
+      productAttributes: data.productAttributes || {},
+    } as Partial<OrderPurchaseOrderItem>);
+    return item;
   }
 }

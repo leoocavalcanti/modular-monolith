@@ -5,9 +5,6 @@ import { DefaultEntity } from '@tlc/shared-module/typeorm';
 
 @Entity({ name: 'CartShoppingCart' })
 export class CartShoppingCart extends DefaultEntity<CartShoppingCart> {
-  constructor(data: Partial<CartShoppingCart>) {
-    super(data);
-  }
   @Column()
   userId: string;
 
@@ -30,5 +27,20 @@ export class CartShoppingCart extends DefaultEntity<CartShoppingCart> {
 
   getTotalItems(): number {
     return this.items?.reduce((total, item) => total + item.quantity, 0) || 0;
+  }
+
+  static create(data: {
+    userId: string;
+    status?: CartStatus;
+    totalAmount?: number;
+    items?: CartShoppingCartItem[];
+  }): CartShoppingCart {
+    const cart = new CartShoppingCart({
+      ...data,
+      status: data.status || CartStatus.ACTIVE,
+      totalAmount: data.totalAmount || 0,
+      items: data.items || [],
+    } as Partial<CartShoppingCart>);
+    return cart;
   }
 }
