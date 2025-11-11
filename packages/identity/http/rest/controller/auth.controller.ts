@@ -1,7 +1,8 @@
-import { Controller, Post, Body, UnauthorizedException } from '@nestjs/common';
+import { Controller, Post, Body, UnauthorizedException, ConflictException } from '@nestjs/common';
 import { plainToInstance } from 'class-transformer';
 import { AuthService } from '../../../core/service/authentication.service';
 import { UserManagementService } from '../../../core/service/user-management.service';
+import { UserAlreadyExistsException } from '../../../core/exception/user-already-exists.exception';
 import { SignInDto } from '../dto/request/sign-in.dto';
 import { RegisterDto } from '../dto/request/register.dto';
 import { AuthTokenDto } from '../dto/response/auth-token.dto';
@@ -31,10 +32,17 @@ export class AuthController {
 
   @Post('register')
   async register(@Body() registerDto: RegisterDto): Promise<UserDto> {
-    const user = await this.userManagementService.create(registerDto);
-    
-    return plainToInstance(UserDto, user, {
-      excludeExtraneousValues: true,
-    });
+    try {
+      const user = await this.userManagementService.create(registerDto);
+      
+      return plainToInstance(UserDto, user, {
+        excludeExtraneousValues: true,
+      });
+    } catch (error) {
+      if (error instanceof UserAlreadyExistsException) {
+        throw new ConflictException(error.message);
+      }
+      throw error;
+    }
   }
 }

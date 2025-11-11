@@ -247,36 +247,322 @@ npx nx serve storefront-api
 - **Admin API**: http://localhost:3001 (para administradores)
 - **Payment API**: http://localhost:3002 (processamento interno)
 
-### 4. Controllers e Endpoints Disponíveis
+### 4. ✅ Sistema Completamente Funcional
 
-Baseado nas APIs ativas, aqui estão os endpoints realmente disponíveis:
+**🎉 Autenticação JWT, CRUD completo e comunicação entre módulos funcionando!**
 
-#### 4.1. Admin API - http://localhost:3001
-- **Catalog (Products)**: `/products` (GET, POST, PUT, DELETE)  
-- **Orders**: `/orders` (GET, POST, PUT)
-- **Health**: `/health` (GET)
-- **Payments**: `/payments/process` (POST), `/payments/:id` (GET)
+## 📱 Guia Completo de Testes com Postman
 
-#### 4.2. Storefront API - http://localhost:3000  
-- **Catalog (Products)**: `/products` (GET, POST, PUT, DELETE)
-- **Cart**: `/cart` (GET)  
-- **Orders**: `/orders` (GET, POST, PUT)
-- **Health**: `/health` (GET)
+### 4.1. Configuração do Environment Postman
 
-#### 4.3. Payment API - http://localhost:3002
-- **Payments**: `/payments/process` (POST), `/payments/:id` (GET)
-- **Health**: `/health` (GET)
+Crie um Environment no Postman com essas variáveis:
 
-⚠️ **NOTA**: Autenticação JWT ainda em desenvolvimento - endpoints protegidos por AuthGuard podem precisar de configuração adicional.
+```json
+{
+  "base_url_admin": "http://localhost:3001",
+  "base_url_storefront": "http://localhost:3000", 
+  "base_url_payment": "http://localhost:3002",
+  "access_token": "",
+  "user_id": "",
+  "user_email": "test@example.com",
+  "user_password": "123456"
+}
+```
 
-### Headers Para Requests
+### 4.2. Script de Auto-Save do Token
+
+Adicione este script no **Tests** tab dos endpoints de login para salvar o token automaticamente:
+
+```javascript
+if (responseCode.code === 200) {
+    const response = pm.response.json();
+    pm.environment.set("access_token", response.access_token);
+    pm.environment.set("user_id", response.user.id);
+    console.log("Token salvo automaticamente:", response.access_token);
+}
+```
+
+### 4.3. Fluxo de Teste Completo
+
+#### 🔐 PASSO 1: Autenticação
+
+##### 1.1. Registro de Usuário
+**Método:** `POST`  
+**URL:** `{{base_url_storefront}}/auth/register`  
+**Headers:**
 ```json
 {
   "Content-Type": "application/json"
 }
 ```
+**Body (JSON):**
+```json
+{
+  "email": "{{user_email}}",
+  "password": "{{user_password}}",
+  "firstName": "Test",
+  "lastName": "User"
+}
+```
 
-💡 **Dica**: Teste primeiro os health checks para confirmar que as APIs estão ativas.
+##### 1.2. Login
+**Método:** `POST`  
+**URL:** `{{base_url_storefront}}/auth/login`  
+**Headers:**
+```json
+{
+  "Content-Type": "application/json"
+}
+```
+**Body (JSON):**
+```json
+{
+  "email": "{{user_email}}",
+  "password": "{{user_password}}"
+}
+```
+
+**Resposta esperada:**
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIs...",
+  "user": {
+    "id": "aa5898b8-8dc7-48d6-8e1d-6bd90e974fc7",
+    "email": "test@example.com",
+    "firstName": "Test",
+    "lastName": "User"
+  }
+}
+```
+
+#### 🏪 PASSO 2: Gestão de Produtos (Admin API)
+
+##### 2.1. Health Check Admin
+**Método:** `GET`  
+**URL:** `{{base_url_admin}}/health`  
+**Headers:** Nenhum necessário
+
+##### 2.2. Criar Produto
+**Método:** `POST`  
+**URL:** `{{base_url_admin}}/products`  
+**Headers:**
+```json
+{
+  "Content-Type": "application/json",
+  "Authorization": "Bearer {{access_token}}"
+}
+```
+**Body (JSON):**
+```json
+{
+  "name": "iPhone 15 Pro",
+  "description": "Smartphone Apple iPhone 15 Pro 128GB",
+  "price": 7999.99,
+  "stock": 50,
+  "sku": "IPH15PRO128",
+  "category": "ELECTRONICS",
+  "imageUrls": ["https://example.com/iphone15pro.jpg"],
+  "attributes": {
+    "color": "Natural Titanium",
+    "storage": "128GB",
+    "brand": "Apple"
+  }
+}
+```
+
+##### 2.3. Listar Produtos
+**Método:** `GET`  
+**URL:** `{{base_url_admin}}/products`  
+**Headers:**
+```json
+{
+  "Authorization": "Bearer {{access_token}}"
+}
+```
+
+#### 🛒 PASSO 3: Experiência do Cliente (Storefront API)
+
+##### 3.1. Ver Produtos Disponíveis
+**Método:** `GET`  
+**URL:** `{{base_url_storefront}}/products`  
+**Headers:**
+```json
+{
+  "Authorization": "Bearer {{access_token}}"
+}
+```
+
+##### 3.2. Ver Carrinho (Vazio)
+**Método:** `GET`  
+**URL:** `{{base_url_storefront}}/cart`  
+**Headers:**
+```json
+{
+  "Authorization": "Bearer {{access_token}}"
+}
+```
+
+**Resposta esperada:**
+```json
+{
+  "items": [],
+  "total": 0
+}
+```
+
+##### 3.3. Adicionar Item ao Carrinho
+**Método:** `POST`  
+**URL:** `{{base_url_storefront}}/cart/items`  
+**Headers:**
+```json
+{
+  "Authorization": "Bearer {{access_token}}",
+  "Content-Type": "application/json"
+}
+```
+**Body (JSON):**
+```json
+{
+  "productId": "{{product_id}}",
+  "productName": "iPhone 15 Pro", 
+  "productSku": "IPH15PRO128",
+  "price": 7999.99,
+  "quantity": 2,
+  "productAttributes": {
+    "color": "Natural Titanium",
+    "storage": "128GB"
+  }
+}
+```
+
+##### 3.4. Fazer Checkout (Criar Pedido)
+**Método:** `POST`  
+**URL:** `{{base_url_storefront}}/orders`  
+**Headers:**
+```json
+{
+  "Authorization": "Bearer {{access_token}}",
+  "Content-Type": "application/json"
+}
+```
+**Body (JSON):**
+```json
+{
+  "shippingAddress": {
+    "street": "Av. Paulista, 1000",
+    "city": "São Paulo", 
+    "state": "SP",
+    "zipCode": "01310-100",
+    "country": "Brazil"
+  },
+  "billingAddress": {
+    "street": "Av. Paulista, 1000",
+    "city": "São Paulo",
+    "state": "SP", 
+    "zipCode": "01310-100",
+    "country": "Brazil"
+  },
+  "paymentMethod": "credit_card",
+  "cardDetails": {
+    "cardNumber": "4111111111111111",
+    "expiryMonth": "12",
+    "expiryYear": "2025",
+    "cvv": "123",
+    "holderName": "Test User"
+  },
+  "customerEmail": "{{user_email}}"
+}
+```
+
+#### 💳 PASSO 4: Processamento de Pagamento (Payment API)
+
+##### 4.1. Processar Pagamento
+**Método:** `POST`  
+**URL:** `{{base_url_payment}}/payments/process`  
+**Headers:**
+```json
+{
+  "Content-Type": "application/json"
+}
+```
+**Body (JSON):**
+```json
+{
+  "amount": 15999.98,
+  "currency": "BRL",
+  "paymentMethod": "credit_card",
+  "cardDetails": {
+    "cardNumber": "4111111111111111",
+    "expiryMonth": "12",
+    "expiryYear": "2025", 
+    "cvv": "123",
+    "cardholderName": "Test User"
+  },
+  "orderId": "{{order_id}}",
+  "customerEmail": "{{user_email}}"
+}
+```
+
+##### 4.2. Verificar Status do Pagamento
+**Método:** `GET`  
+**URL:** `{{base_url_payment}}/payments/{{payment_id}}`  
+**Headers:** Nenhum necessário
+
+### 4.4. Endpoints Disponíveis por API
+
+#### Storefront API (http://localhost:3000)
+- `POST /auth/register` - Registro de usuário
+- `POST /auth/login` - Login 
+- `GET /products` - Listar produtos
+- `GET /products/:id` - Produto por ID
+- `GET /cart` - Ver carrinho
+- `POST /cart/items` - Adicionar ao carrinho
+- `GET /orders` - Pedidos do usuário
+- `POST /orders` - Criar pedido (checkout)
+- `GET /health` - Health check
+
+#### Admin API (http://localhost:3001)  
+- `POST /auth/register` - Registro de admin
+- `POST /auth/login` - Login admin
+- `GET /products` - Listar produtos
+- `POST /products` - Criar produto
+- `PUT /products/:id` - Atualizar produto
+- `DELETE /products/:id` - Deletar produto
+- `GET /orders` - Todos os pedidos
+- `PUT /orders/:id/status` - Atualizar status
+- `GET /health` - Health check
+
+#### Payment API (http://localhost:3002)
+- `POST /payments/process` - Processar pagamento
+- `GET /payments/:id` - Status do pagamento
+- `GET /payments/health` - Health check
+
+### 4.5. Cenários de Teste de Pagamento
+
+#### ✅ Cartão Aprovado
+Use: `4111111111111111` - Será aprovado
+
+#### ❌ Saldo Insuficiente  
+Use: `4111111111110000` - Será rejeitado por saldo
+
+#### ❌ Cartão Recusado
+Use: `4111111111111111` (mas com nome "Declined Test") - Será rejeitado
+
+#### 💰 PIX
+```json
+{
+  "paymentMethod": "pix",
+  "amount": 999.99
+}
+```
+
+#### 🧾 Boleto
+```json
+{
+  "paymentMethod": "boleto",
+  "amount": 1500.00
+}
+```
 
 ## 🛠️ Desenvolvimento com NX
 

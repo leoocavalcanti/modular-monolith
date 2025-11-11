@@ -2,6 +2,7 @@ import { ConfigService } from '@tlc/shared-module/config';
 import { join } from 'path';
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions';
 import { IdentityConfig } from '../config';
+import { User } from './entity/user.entity';
 
 export const dataSourceOptionsFactory = (
   configService: ConfigService<IdentityConfig>
@@ -14,7 +15,7 @@ export const dataSourceOptionsFactory = (
   password: configService.get('identity.database.password'),
   database: configService.get('identity.database.database'),
   synchronize: false,
-  entities: [join(__dirname, 'entity', '*.entity.{ts,js}')],
+  entities: [User],
   migrations: [join(__dirname, 'migration', '*-migration.{ts,js}')],
   migrationsRun: false,
   migrationsTableName: 'identity_migrations',
