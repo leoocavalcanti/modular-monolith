@@ -26,16 +26,16 @@ services:
     command: redis-server --save 60 1 --loglevel warning
 
   # E-commerce APIs
-  # storefront-api:
+  # client-api:
   #   build:
   #     context: .
-  #     dockerfile: apps/storefront-api/Dockerfile
-  #   container_name: ecommerce-storefront-api
+  #     dockerfile: apps/client-api/Dockerfile
+  #   container_name: ecommerce-client-api
   #   ports:
   #     - "3000:3000"
   #   environment:
   #     - NODE_ENV=development
-  #     - STOREFRONT_PORT=3000
+  #     - CLIENT_PORT=3000
   #     - CATALOG_DB_HOST=postgres
   #     - CATALOG_DB_PORT=5432
   #     - CATALOG_DB_USERNAME=postgres

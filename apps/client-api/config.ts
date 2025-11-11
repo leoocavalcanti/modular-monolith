@@ -1,7 +1,7 @@
 import { registerAs } from '@nestjs/config';
 
-export const storefrontConfig = registerAs('storefront', () => ({
-  port: process.env.STOREFRONT_PORT || 3000,
+export const clientConfig = registerAs('client', () => ({
+  port: process.env.CLIENT_PORT || 3000,
   environment: process.env.NODE_ENV || 'development',
 }));
 

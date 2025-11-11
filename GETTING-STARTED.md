@@ -38,13 +38,13 @@ docker-compose ps
 
 ```bash
 # Testar APIs
-curl http://localhost:3000/health    # Storefront API
+curl http://localhost:3000/health    # Client API
 curl http://localhost:3001/health    # Admin API  
 curl http://localhost:3002/health    # Payment API
 ```
 
 **🎉 Pronto! As APIs estão rodando:**
-- **Storefront API**: http://localhost:3000
+- **Client API**: http://localhost:3000
 - **Admin API**: http://localhost:3001
 - **Payment API**: http://localhost:3002
 
@@ -79,7 +79,7 @@ O sistema usa **PostgreSQL** com múltiplos bancos isolados:
 services:
   postgres:         # Banco de dados principal
   redis:           # Sistema de filas
-  storefront-api:  # API do cliente (porta 3000)
+  client-api:  # API do cliente (porta 3000)
   admin-api:       # API administrativa (porta 3001)
   payment-api:     # API de pagamentos (porta 3002)
 ```
@@ -135,7 +135,7 @@ yarn db:drop:all
 docker-compose up -d
 
 # Ver logs de um serviço específico
-docker-compose logs -f storefront-api
+docker-compose logs -f client-api
 
 # Reconstruir imagens
 docker-compose up -d --build
@@ -151,7 +151,7 @@ docker-compose down -v
 
 ## 🧪 Testando as APIs
 
-### 1. Storefront API (Clientes)
+### 1. Client API (Clientes)
 
 ```bash
 # Listar produtos
@@ -296,7 +296,7 @@ export REDIS_HOST=redis.production.com
 docker-compose logs -f
 
 # Logs de uma API específica
-docker-compose logs -f storefront-api
+docker-compose logs -f client-api
 docker-compose logs -f payment-api
 
 # Logs do PostgreSQL

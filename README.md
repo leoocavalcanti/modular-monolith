@@ -8,7 +8,7 @@ Este projeto implementa um sistema de e-commerce seguindo a arquitetura modular,
 
 ### Apps Backend (Servidores NestJS)
 
-#### 1. Storefront API (`/apps/storefront-api/`) - Porta 3000
+#### 1. Client API (`/apps/client-api/`) - Porta 3000
 API para clientes do e-commerce.
 
 **Módulos:**
@@ -137,7 +137,7 @@ Utilitários compartilhados (reutiliza módulo existente).
 
 ## Comunicação HTTP Entre APIs
 
-### Storefront API → Payment API
+### Client API → Payment API
 ```typescript
 // packages/order/http/client/payment-api.client.ts
 @Injectable()
@@ -163,11 +163,11 @@ export class PaymentApiHttpClient {
 
 Cada módulo possui seu próprio banco de dados:
 
-- **Catalog**: `ecommerce_catalog`
-- **Cart**: `ecommerce_cart`
-- **Order**: `ecommerce_order`
-- **Payment**: `ecommerce_payment`
-- **Identity**: `fakeflix_test` (reutiliza existente)
+- **Catalog**: `ecommerce_catalog_db`
+- **Cart**: `ecommerce_cart_db`
+- **Order**: `ecommerce_order_db`
+- **Payment**: `ecommerce_payment_db`
+- **Identity**: `ecommerce_identity_db`
 
 **Entidades com nomes únicos:**
 - `CatalogProduct` (não `Product`)
@@ -238,12 +238,12 @@ npx nx serve admin-api
 # Terminal 2 - Payment API (porta 3002)  
 npx nx serve payment-api
 
-# Terminal 3 - Storefront API (porta 3000)
-npx nx serve storefront-api
+# Terminal 3 - Client API (porta 3000)
+npx nx serve client-api
 ```
 
 ### 3. URLs das APIs
-- **Storefront API**: http://localhost:3000 (para clientes)
+- **Client API**: http://localhost:3000 (para clientes)
 - **Admin API**: http://localhost:3001 (para administradores)
 - **Payment API**: http://localhost:3002 (processamento interno)
 
@@ -260,7 +260,7 @@ Crie um Environment no Postman com essas variáveis:
 ```json
 {
   "base_url_admin": "http://localhost:3001",
-  "base_url_storefront": "http://localhost:3000", 
+  "base_url_client": "http://localhost:3000", 
   "base_url_payment": "http://localhost:3002",
   "access_token": "",
   "user_id": "",
@@ -288,7 +288,7 @@ if (responseCode.code === 200) {
 
 ##### 1.1. Registro de Usuário
 **Método:** `POST`  
-**URL:** `{{base_url_storefront}}/auth/register`  
+**URL:** `{{base_url_client}}/auth/register`  
 **Headers:**
 ```json
 {
@@ -307,7 +307,7 @@ if (responseCode.code === 200) {
 
 ##### 1.2. Login
 **Método:** `POST`  
-**URL:** `{{base_url_storefront}}/auth/login`  
+**URL:** `{{base_url_client}}/auth/login`  
 **Headers:**
 ```json
 {
@@ -380,11 +380,11 @@ if (responseCode.code === 200) {
 }
 ```
 
-#### 🛒 PASSO 3: Experiência do Cliente (Storefront API)
+#### 🛒 PASSO 3: Experiência do Cliente (Client API)
 
 ##### 3.1. Ver Produtos Disponíveis
 **Método:** `GET`  
-**URL:** `{{base_url_storefront}}/products`  
+**URL:** `{{base_url_client}}/products`  
 **Headers:**
 ```json
 {
@@ -394,7 +394,7 @@ if (responseCode.code === 200) {
 
 ##### 3.2. Ver Carrinho (Vazio)
 **Método:** `GET`  
-**URL:** `{{base_url_storefront}}/cart`  
+**URL:** `{{base_url_client}}/cart`  
 **Headers:**
 ```json
 {
@@ -412,7 +412,7 @@ if (responseCode.code === 200) {
 
 ##### 3.3. Adicionar Item ao Carrinho
 **Método:** `POST`  
-**URL:** `{{base_url_storefront}}/cart/items`  
+**URL:** `{{base_url_client}}/cart/items`  
 **Headers:**
 ```json
 {
@@ -437,7 +437,7 @@ if (responseCode.code === 200) {
 
 ##### 3.4. Fazer Checkout (Criar Pedido)
 **Método:** `POST`  
-**URL:** `{{base_url_storefront}}/orders`  
+**URL:** `{{base_url_client}}/orders`  
 **Headers:**
 ```json
 {
@@ -510,7 +510,7 @@ if (responseCode.code === 200) {
 
 ### 4.4. Endpoints Disponíveis por API
 
-#### Storefront API (http://localhost:3000)
+#### Client API (http://localhost:3000)
 - `POST /auth/register` - Registro de usuário
 - `POST /auth/login` - Login 
 - `GET /products` - Listar produtos
@@ -592,7 +592,7 @@ nx graph
 
 # Executar comandos em projetos específicos
 nx run catalog:test:unit
-nx run storefront-api:build
+nx run client-api:build
 nx run payment:lint:check
 ```
 
@@ -600,7 +600,7 @@ nx run payment:lint:check
 ```
 monorepo/
 ├── apps/                  # Aplicações
-│   ├── storefront-api/    
+│   ├── client-api/    
 │   ├── admin-api/         
 │   └── payment-api/       
 ├── packages/              # Bibliotecas
@@ -698,7 +698,7 @@ TOKEN="seu_token_jwt_aqui"
 }
 ```
 
-#### 5.2. Storefront API - Experiência do Cliente
+#### 5.2. Client API - Experiência do Cliente
 
 ##### 1. Listar Produtos Disponíveis
 **Método:** `GET`  
@@ -841,7 +841,7 @@ TOKEN="seu_token_jwt_aqui"
 }
 ```
 
-##### 10. Health Check Storefront API
+##### 10. Health Check Client API
 **Método:** `GET`  
 **URL:** `http://localhost:3000/health`  
 **Headers:** Nenhum necessário
@@ -927,8 +927,8 @@ TOKEN="seu_token_jwt_aqui"
 
 ### 6. Teste de Comunicação Entre Módulos
 
-#### 6.1. Storefront → Payment (via HTTP Client)
-Quando você cria um pedido na Storefront API, ela automaticamente:
+#### 6.1. Client → Payment (via HTTP Client)
+Quando você cria um pedido na Client API, ela automaticamente:
 
 1. **Order Module** chama **Payment API** via `PaymentApiClient`
 2. **Payment API** processa o pagamento e retorna o resultado
@@ -939,7 +939,7 @@ Quando você cria um pedido na Storefront API, ela automaticamente:
 ```bash
 # Monitore os logs das APIs em terminais separados
 # Terminal 1
-npx nx serve storefront-api --verbose
+npx nx serve client-api --verbose
 
 # Terminal 2  
 npx nx serve payment-api --verbose
@@ -1100,7 +1100,7 @@ Crie um Environment no Postman com essas variáveis:
 ```json
 {
   "base_url_admin": "http://localhost:3001",
-  "base_url_storefront": "http://localhost:3000", 
+  "base_url_client": "http://localhost:3000", 
   "base_url_payment": "http://localhost:3002",
   "access_token": "",
   "user_email": "admin@example.com",
@@ -1114,9 +1114,9 @@ Crie um Environment no Postman com essas variáveis:
 2. **Login**: POST `{{base_url_admin}}/auth/login` (salva o token automaticamente)
 3. **Health Checks**: GET em todas as APIs `/health`
 4. **Criar Produto**: POST `{{base_url_admin}}/products`
-5. **Ver Produtos**: GET `{{base_url_storefront}}/products`
-6. **Carrinho**: GET/POST/PUT `{{base_url_storefront}}/cart`
-7. **Checkout**: POST `{{base_url_storefront}}/orders`
+5. **Ver Produtos**: GET `{{base_url_client}}/products`
+6. **Carrinho**: GET/POST/PUT `{{base_url_client}}/cart`
+7. **Checkout**: POST `{{base_url_client}}/orders`
 8. **Pagamento**: POST `{{base_url_payment}}/payments/process`
 9. **Gestão Admin**: PUT `{{base_url_admin}}/orders/{{order_id}}/status`
 
@@ -1155,7 +1155,7 @@ Execute este checklist para verificar se tudo está funcionando:
 
 ```bash
 # 1. Verificar se as APIs estão rodando
-curl http://localhost:3000/health  # Storefront API
+curl http://localhost:3000/health  # Client API
 curl http://localhost:3001/health  # Admin API  
 curl http://localhost:3002/health  # Payment API
 
@@ -1254,7 +1254,7 @@ test_endpoint() {
 
 # Testar Health Checks
 echo -e "${YELLOW}📊 Testando Health Checks...${NC}"
-test_endpoint "http://localhost:3000/health" "Storefront API"
+test_endpoint "http://localhost:3000/health" "Client API"
 test_endpoint "http://localhost:3001/health" "Admin API" 
 test_endpoint "http://localhost:3002/health" "Payment API"
 
@@ -1296,7 +1296,7 @@ test_endpoint_with_auth() {
   fi
 }
 
-test_endpoint_with_auth "http://localhost:3000/products" "Produtos (Storefront)"
+test_endpoint_with_auth "http://localhost:3000/products" "Produtos (Client)"
 test_endpoint_with_auth "http://localhost:3000/cart" "Carrinho" 
 test_endpoint_with_auth "http://localhost:3000/orders" "Pedidos (Cliente)"
 test_endpoint_with_auth "http://localhost:3001/products" "Produtos (Admin)"
@@ -1332,7 +1332,7 @@ O sistema simula diferentes gateways de pagamento:
 
 ### 🚀 Preparação (Terminal)
 1. **Preparar ambiente**: `yarn install` + `docker-compose up -d`
-2. **Iniciar APIs**: `npx nx serve admin-api` + `npx nx serve payment-api` + `npx nx serve storefront-api`
+2. **Iniciar APIs**: `npx nx serve admin-api` + `npx nx serve payment-api` + `npx nx serve client-api`
 
 ### 📱 Testes no Postman
 1. **Environment**: Configure as variáveis base_url_* e access_token
@@ -1340,8 +1340,8 @@ O sistema simula diferentes gateways de pagamento:
 3. **Fazer login**: POST `{{base_url_admin}}/auth/login` → Token salvo automaticamente
 4. **Health checks**: GET `/health` em todas as APIs
 5. **Criar produtos**: POST `{{base_url_admin}}/products`
-6. **Testar carrinho**: GET/POST `{{base_url_storefront}}/cart`
-7. **Fazer checkout**: POST `{{base_url_storefront}}/orders` (🔗 triggers Payment API communication)
+6. **Testar carrinho**: GET/POST `{{base_url_client}}/cart`
+7. **Fazer checkout**: POST `{{base_url_client}}/orders` (🔗 triggers Payment API communication)
 8. **Verificar pagamento**: GET `{{base_url_payment}}/payments/{{payment_id}}`
 9. **Gerenciar pedidos**: PUT `{{base_url_admin}}/orders/{{order_id}}/status`
 

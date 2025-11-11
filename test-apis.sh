@@ -24,7 +24,7 @@ test_endpoint() {
 
 # Testar Health Checks
 echo -e "${YELLOW}📊 Testando Health Checks...${NC}"
-test_endpoint "http://localhost:3000/health" "Storefront API"
+test_endpoint "http://localhost:3000/health" "Client API"
 test_endpoint "http://localhost:3001/health" "Admin API" 
 test_endpoint "http://localhost:3002/health" "Payment API"
 
@@ -66,7 +66,7 @@ test_endpoint_with_auth() {
   fi
 }
 
-test_endpoint_with_auth "http://localhost:3000/products" "Produtos (Storefront)"
+test_endpoint_with_auth "http://localhost:3000/products" "Produtos (Client)"
 test_endpoint_with_auth "http://localhost:3000/cart" "Carrinho" 
 test_endpoint_with_auth "http://localhost:3000/orders" "Pedidos (Cliente)"
 test_endpoint_with_auth "http://localhost:3001/products" "Produtos (Admin)"

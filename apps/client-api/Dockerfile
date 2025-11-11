@@ -4,10 +4,10 @@ WORKDIR /app
 
 COPY package*.json yarn.lock ./
 COPY packages/ packages/
-COPY apps/storefront-api/ apps/storefront-api/
+COPY apps/client-api/ apps/client-api/
 
 RUN yarn install --frozen-lockfile
-RUN yarn build storefront-api
+RUN yarn build client-api
 
 FROM node:18-alpine AS runtime
 
@@ -21,4 +21,4 @@ COPY --from=builder /app/packages ./packages
 
 EXPOSE 3000
 
-CMD ["node", "dist/apps/storefront-api/main.js"]
+CMD ["node", "dist/apps/client-api/main.js"]

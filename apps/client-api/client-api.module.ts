@@ -5,7 +5,7 @@ import { CatalogModule } from '@tlc/catalog';
 import { CartModule } from '@tlc/cart';
 import { OrderModule } from '@tlc/order';
 import { IdentityModule } from '@tlc/identity';
-import { storefrontConfig, catalogConfig, cartConfig, orderConfig, identityConfig } from './config';
+import { clientConfig, catalogConfig, cartConfig, orderConfig, identityConfig } from './config';
 
 @Module({
   imports: [
@@ -15,9 +15,9 @@ import { storefrontConfig, catalogConfig, cartConfig, orderConfig, identityConfi
     OrderModule,
     IdentityModule,
     ConfigModule.forRoot({
-      load: [storefrontConfig, catalogConfig, cartConfig, orderConfig, identityConfig],
+      load: [clientConfig, catalogConfig, cartConfig, orderConfig, identityConfig],
       isGlobal: true,
     }),
   ],
 })
-export class StorefrontApiModule {}
+export class ClientApiModule {}

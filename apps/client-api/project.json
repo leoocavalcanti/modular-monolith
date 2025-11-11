@@ -1,9 +1,9 @@
 {
-  "name": "storefront-api",
+  "name": "client-api",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "apps/storefront-api",
+  "sourceRoot": "apps/client-api",
   "projectType": "application",
-  "tags": ["scope:storefront", "type:app"],
+  "tags": ["scope:client", "type:app"],
   "targets": {
     "build": {
       "executor": "@nx/webpack:webpack",
@@ -12,11 +12,11 @@
       "options": {
         "target": "node",
         "compiler": "tsc",
-        "outputPath": "dist/apps/storefront-api",
-        "main": "apps/storefront-api/main.ts",
-        "tsConfig": "apps/storefront-api/tsconfig.app.json",
+        "outputPath": "dist/apps/client-api",
+        "main": "apps/client-api/main.ts",
+        "tsConfig": "apps/client-api/tsconfig.app.json",
         "isolatedConfig": true,
-        "webpackConfig": "apps/storefront-api/webpack.config.js"
+        "webpackConfig": "apps/client-api/webpack.config.js"
       },
       "configurations": {
         "development": {
@@ -35,14 +35,14 @@
       "executor": "@nx/js:node",
       "defaultConfiguration": "development",
       "options": {
-        "buildTarget": "storefront-api:build"
+        "buildTarget": "client-api:build"
       },
       "configurations": {
         "development": {
-          "buildTarget": "storefront-api:build:development"
+          "buildTarget": "client-api:build:development"
         },
         "production": {
-          "buildTarget": "storefront-api:build:production"
+          "buildTarget": "client-api:build:production"
         }
       }
     },
@@ -50,14 +50,14 @@
       "executor": "@nx/eslint:lint",
       "outputs": ["{options.outputFile}"],
       "options": {
-        "lintFilePatterns": ["apps/storefront-api/**/*.ts"]
+        "lintFilePatterns": ["apps/client-api/**/*.ts"]
       }
     },
     "test:unit": {
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
-        "jestConfig": "apps/storefront-api/jest.config.ts"
+        "jestConfig": "apps/client-api/jest.config.ts"
       }
     }
   }
