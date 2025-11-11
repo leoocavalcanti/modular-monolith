@@ -51,7 +51,7 @@ export const cartConfig = registerAs('cart', () => ({
 export const identityConfig = registerAs('identity', () => ({
   database: {
     host: process.env.IDENTITY_DB_HOST || 'localhost',
-    port: parseInt(process.env.IDENTITY_DB_PORT || '5432'),
+    port: parseInt(process.env.IDENTITY_DB_PORT || '5433'),
     username: process.env.IDENTITY_DB_USERNAME || 'postgres',
     password: process.env.IDENTITY_DB_PASSWORD || 'postgres',
     database: process.env.IDENTITY_DB_DATABASE || 'ecommerce_identity',

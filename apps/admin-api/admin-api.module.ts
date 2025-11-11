@@ -4,7 +4,7 @@ import { LoggerModule } from '@tlc/shared-module/logger';
 import { CatalogModule } from '@tlc/catalog';
 import { OrderModule } from '@tlc/order';
 import { PaymentModule } from '@tlc/payment';
-// import { IdentityModule } from '@tlc/identity';
+import { IdentityModule } from '@tlc/identity';
 import { adminConfig, catalogConfig, orderConfig, paymentConfig, cartConfig, identityConfig } from './config';
 
 @Module({
@@ -13,7 +13,7 @@ import { adminConfig, catalogConfig, orderConfig, paymentConfig, cartConfig, ide
     CatalogModule,
     OrderModule,
     PaymentModule,
-    // IdentityModule,
+    IdentityModule,
     ConfigModule.forRoot({
       load: [adminConfig, catalogConfig, orderConfig, paymentConfig, cartConfig, identityConfig],
       isGlobal: true,
