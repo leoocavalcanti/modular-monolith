@@ -105,8 +105,8 @@ export class PaymentProcessingService {
     }
 
     // Check retry count (this would come from transaction metadata or separate field)
-    const retryCount = typeof transaction.metadata?.retryCount === 'number' 
-      ? transaction.metadata.retryCount 
+    const retryCount = typeof transaction.metadata?.['retryCount'] === 'number' 
+      ? transaction.metadata['retryCount'] 
       : 0;
     return retryCount < maxRetries;
   }

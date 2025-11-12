@@ -40,6 +40,11 @@ export class CartService implements ICartService {
   async addToCart(userId: string, data: AddToCartData): Promise<CartShoppingCart> {
     const cart = await this.getUserActiveCart(userId);
     
+    // Validate cart exists
+    if (!cart || !cart.id) {
+      throw new DomainException('Active cart not found for user');
+    }
+    
     const existingItem = await this.cartItemRepository.findByCartIdAndProductId(
       cart.id, 
       data.productId
@@ -50,14 +55,16 @@ export class CartService implements ICartService {
       existingItem.price = data.price;
       await this.cartItemRepository.save(existingItem);
     } else {
-      const cartItem = new CartShoppingCartItem({
+      // Use static factory method for controlled entity creation
+      const cartItem = CartShoppingCartItem.create({
         cartId: cart.id,
         productId: data.productId,
         productName: data.productName,
         productSku: data.productSku,
         price: data.price,
         quantity: data.quantity,
-        productAttributes: data.productAttributes || {},
+        productAttributes: data.productAttributes,
+        cart: cart,
       });
       
       await this.cartItemRepository.save(cartItem);

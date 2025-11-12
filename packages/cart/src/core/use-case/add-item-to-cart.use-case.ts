@@ -10,9 +10,11 @@ export interface AddItemToCartRequest {
   userId: string;
   productId: string;
   productName: string;
+  productSku: string;
   productPrice: number;
   quantity: number;
   productImageUrl?: string;
+  productAttributes?: Record<string, unknown>;
 }
 
 export interface AddItemToCartResult {
@@ -81,16 +83,16 @@ export class AddItemToCartUseCase {
             totalPrice: cartItem.totalPrice,
           });
         } else {
-          // Create new cart item
-          cartItem = new CartShoppingCartItem({
+          // Create new cart item using static factory method
+          cartItem = CartShoppingCartItem.create({
             cartId: cart.id,
             productId: request.productId,
             productName: request.productName,
-            productSku: '',
+            productSku: request.productSku || 'SKU-' + request.productId.substr(0, 8),
             price: request.productPrice,
             quantity: request.quantity,
-            createdAt: new Date(),
-            updatedAt: new Date(),
+            productAttributes: request.productAttributes,
+            cart: cart,
           });
           cartItem = await this.cartItemRepository.save(cartItem);
 

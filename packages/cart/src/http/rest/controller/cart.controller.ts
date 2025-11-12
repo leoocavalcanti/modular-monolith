@@ -34,14 +34,14 @@ export class CartController {
   @UseGuards(AuthGuard)
   async addToCart(@Body() addToCartDto: AddToCartDto): Promise<CartResponseDto> {
     const userId = this.clsService.get('userId');
-    const result = await this.addItemToCartUseCase.execute({
-      userId,
+    const cart = await this.cartService.addToCart(userId, {
       productId: addToCartDto.productId,
       productName: addToCartDto.productName,
-      productPrice: addToCartDto.price,
+      productSku: addToCartDto.productSku,
+      price: addToCartDto.price,
       quantity: addToCartDto.quantity,
+      productAttributes: addToCartDto.productAttributes,
     });
-    const cart = await this.cartService.getCartById(result.cartId);
     return plainToInstance(CartResponseDto, cart, {
       excludeExtraneousValues: true,
     });

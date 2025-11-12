@@ -5,6 +5,7 @@ import { plainToInstance } from 'class-transformer';
 import { ClsService } from 'nestjs-cls';
 import { OrderStatus } from '../../../core/enum/order-status.enum';
 import { OrderService } from '../../../core/service/order.service';
+import { CreateOrderFromCartUseCase } from '../../../core/use-case/create-order-from-cart.use-case';
 import { CreateOrderDto } from '../dto/request/create-order.dto';
 import { UpdateOrderStatusDto } from '../dto/request/update-order-status.dto';
 import { OrderResponseDto } from '../dto/response/order.dto';
@@ -32,6 +33,7 @@ interface CartItem {
 export class OrderController {
   constructor(
     private readonly orderService: OrderService,
+    private readonly createOrderUseCase: CreateOrderFromCartUseCase,
     private readonly cartFacade: CartFacade,
     private readonly clsService: ClsService
   ) {}
@@ -61,45 +63,44 @@ export class OrderController {
   }
 
   @Post()
-  async createOrder(@Body() createOrderDto: CreateOrderDto): Promise<OrderResponseDto> {
+  async createOrder(@Body() createOrderDto: CreateOrderDto): Promise<any> {
     const userId = this.clsService.get('userId');
     const cart = await this.cartFacade.getUserActiveCart(userId);
     
     this.validateCartForOrder(cart);
-    const orderData = this.buildOrderData(userId, cart, createOrderDto);
-    const order = await this.orderService.createOrder(orderData);
+    
+    const result = await this.createOrderUseCase.execute({
+      userId,
+      items: cart.items.map((item: CartItem) => ({
+        productId: item.productId,
+        productName: item.productName,
+        quantity: item.quantity,
+        price: item.price,
+      })),
+      shippingAddress: createOrderDto.shippingAddress,
+      billingAddress: createOrderDto.billingAddress,
+      paymentMethod: createOrderDto.paymentMethod,
+      cardDetails: createOrderDto.cardDetails 
+        ? {
+            cardNumber: createOrderDto.cardDetails.cardNumber,
+            expiryMonth: createOrderDto.cardDetails.expiryMonth,
+            expiryYear: createOrderDto.cardDetails.expiryYear,
+            cvv: createOrderDto.cardDetails.cvv,
+            holderName: createOrderDto.cardDetails.cardholderName,
+          }
+        : undefined,
+      customerEmail: createOrderDto.customerEmail,
+    });
     
     await this.cartFacade.completeCart(cart.id);
     
-    return plainToInstance(OrderResponseDto, order, {
-      excludeExtraneousValues: true,
-    });
+    return result;
   }
 
   private validateCartForOrder(cart: Cart): void {
     if (!cart.items || cart.items.length === 0) {
       throw new Error('Cannot create order from empty cart');
     }
-  }
-
-  private buildOrderData(userId: string, cart: Cart, createOrderDto: CreateOrderDto) {
-    return {
-      cartId: cart.id,
-      userId,
-      items: cart.items.map((item: CartItem) => ({
-        productId: item.productId,
-        productName: item.productName,
-        productSku: item.productSku,
-        unitPrice: item.price,
-        quantity: item.quantity,
-        productAttributes: item.productAttributes,
-      })),
-      shippingAddress: createOrderDto.shippingAddress,
-      billingAddress: createOrderDto.billingAddress,
-      paymentMethod: createOrderDto.paymentMethod,
-      cardDetails: createOrderDto.cardDetails,
-      customerEmail: createOrderDto.customerEmail,
-    };
   }
 
   @Put(':id/status')

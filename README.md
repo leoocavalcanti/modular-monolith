@@ -585,6 +585,139 @@ yarn db:migrate:all        # Executar migrações de todos os módulos
 yarn release               # Criar release com conventional commits
 ```
 
+## 🧪 Testes
+
+### Executando Testes por Package
+
+O projeto possui uma infraestrutura completa de testes seguindo os padrões do monorepo fakeflix:
+
+```bash
+# Executar testes de um package específico
+npx nx test catalog         # Testes do módulo Catalog (8 testes)
+npx nx test cart           # Testes do módulo Cart (14 testes)  
+npx nx test order          # Testes do módulo Order (36 testes)
+npx nx test payment        # Testes do módulo Payment (71 testes)
+
+# Executar todos os testes de uma vez
+npx nx test catalog && npx nx test cart && npx nx test order && npx nx test payment
+```
+
+### Estrutura dos Testes
+
+#### 📁 Organização dos Arquivos
+```
+packages/
+├── catalog/
+│   ├── __test__/
+│   │   ├── factory/
+│   │   │   └── catalog-product.test-factory.ts
+│   │   └── helper/
+│   │       └── catalog-db.test-helper.ts
+│   └── src/core/service/__test__/unit/
+│       └── catalog-product.service.spec.ts
+├── cart/
+│   ├── __test__/factory/
+│   │   └── cart-shopping-cart.test-factory.ts
+│   └── src/core/service/__test__/unit/
+│       └── cart.service.spec.ts
+├── order/
+│   ├── __test__/factory/
+│   │   └── order-purchase-order.test-factory.ts
+│   └── src/core/service/__test__/unit/
+│       └── order.service.spec.ts
+└── payment/
+    ├── __test__/factory/
+    │   └── payment-transaction.test-factory.ts
+    ├── src/core/service/__test__/unit/
+    │   ├── payment-processing.service.spec.ts
+    │   └── payment-simulator.service.spec.ts
+    └── src/core/model/__test__/unit/
+        └── payment-amount.model.spec.ts
+```
+
+#### 🏭 Test Factories (Padrão Fakeflix)
+```typescript
+// Exemplo de factory
+export const catalogProductFactory = Factory.Sync.makeFactory<CatalogProduct>({
+  id: Factory.each(() => faker.string.uuid()),
+  name: Factory.each(() => faker.commerce.productName()),
+  price: Factory.each(() => parseFloat(faker.commerce.price())),
+  stock: Factory.each(() => faker.number.int({ min: 0, max: 100 })),
+  // ... outras propriedades
+});
+
+// Uso nos testes
+const product = catalogProductFactory.build({ stock: 10 });
+```
+
+### Coverage dos Testes
+
+| Package | Testes | Cobertura |
+|---------|--------|-----------|
+| **Catalog** | 8 testes | Serviços de domínio |
+| **Cart** | 14 testes | CRUD completo + validações |
+| **Order** | 36 testes | Lógica de negócio completa |
+| **Payment** | 71 testes | Processamento + domain models |
+| **Total** | **129 testes** | **Infraestrutura completa** |
+
+### Tecnologias de Teste
+
+- **Jest**: Framework principal de testes
+- **@nestjs/testing**: Módulos de teste para NestJS
+- **factory.ts**: Geração de dados de teste
+- **@faker-js/faker**: Dados fake realistas
+- **Mocks**: Dependências mockadas (repositories, services)
+
+### Configuração Jest
+
+Cada package possui sua própria configuração Jest seguindo o padrão fakeflix:
+
+```typescript
+// packages/catalog/jest.config.ts
+export default {
+  displayName: 'catalog',
+  preset: '../../jest.preset.js',
+  testEnvironment: 'node',
+  transform: {
+    '^.+\\.[tj]s$': ['ts-jest', { tsconfig: '<rootDir>/tsconfig.spec.json' }],
+  },
+  moduleFileExtensions: ['ts', 'js', 'html'],
+  coverageDirectory: '../../coverage/packages/catalog',
+  testMatch: [
+    '<rootDir>/**/__test__/**/*.(spec|test).ts',
+    '<rootDir>/**/core/**/*.(spec|test).ts',
+  ],
+};
+```
+
+### Executando Testes com Watch Mode
+
+```bash
+# Watch mode para desenvolvimento
+npx nx test catalog --watch
+npx nx test cart --watch
+npx nx test order --watch
+npx nx test payment --watch
+```
+
+### Executando Testes com Coverage
+
+```bash
+# Gerar relatório de cobertura
+npx nx test catalog --coverage
+npx nx test cart --coverage
+npx nx test order --coverage
+npx nx test payment --coverage
+```
+
+### Debug de Testes
+
+```bash
+# Debug com Node Inspector
+npx nx test catalog --inspect-brk
+npx nx test cart --inspect-brk
+```
+
 ### Graph de Dependências
 ```bash
 # Visualizar dependências entre projetos
