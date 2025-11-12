@@ -75,10 +75,16 @@ export class ProcessPaymentUseCase {
 
         // Check if requires immediate processing (domain logic)
         if (this.paymentProcessingService.requiresImmediateProcessing(request.paymentMethod)) {
+          const cardDetails = request.cardDetails ? {
+            ...request.cardDetails,
+            expiryMonth: parseInt(request.cardDetails.expiryMonth, 10),
+            expiryYear: parseInt(request.cardDetails.expiryYear, 10),
+          } : undefined;
+          
           const result = await this.paymentSimulator.simulatePayment(
             request.amount,
             request.paymentMethod,
-            request.cardDetails
+            cardDetails
           );
 
           // Apply domain logic to update transaction

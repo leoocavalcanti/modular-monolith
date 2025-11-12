@@ -5,68 +5,72 @@ import { NotFoundDomainException } from '@tlc/shared-lib/common';
 import { CartShoppingCartRepository } from '../../persistence/repository/cart-shopping-cart.repository';
 import { CartShoppingCartItemRepository } from '../../persistence/repository/cart-shopping-cart-item.repository';
 
-export interface ClearCartRequest {
+export interface RemoveItemFromCartRequest {
   userId: string;
-  reason: 'checkout' | 'manual_clear' | 'session_expired';
+  productId: string;
 }
 
-export interface ClearCartResult {
+export interface RemoveItemFromCartResult {
   cartId: string;
-  itemsRemoved: number;
-  totalValueRemoved: number;
-  clearedAt: Date;
+  productId: string;
+  cartItemsCount: number;
+  cartTotal: number;
 }
 
 @Injectable()
-export class ClearCartUseCase {
+export class RemoveItemFromCartUseCase {
   constructor(
     private readonly cartRepository: CartShoppingCartRepository,
     private readonly cartItemRepository: CartShoppingCartItemRepository,
     private readonly logger: AppLogger
   ) {}
 
-  async execute(request: ClearCartRequest): Promise<ClearCartResult> {
-    this.logger.log(`Clearing cart for user`, {
+  async execute(request: RemoveItemFromCartRequest): Promise<RemoveItemFromCartResult> {
+    this.logger.log(`Removing item from cart`, {
       userId: request.userId,
-      reason: request.reason,
+      productId: request.productId,
     });
 
     return await runInTransaction(
       async () => {
         const cart = await this.cartRepository.findByUserId(request.userId);
-        
         if (!cart) {
           throw new NotFoundDomainException(`Cart not found for user ${request.userId}`);
         }
 
-        // Get current cart items for stats
-        const cartItems = await this.cartItemRepository.findByCartId(cart.id);
-        const itemsRemoved = cartItems.reduce((sum, item) => sum + item.quantity, 0);
-        const totalValueRemoved = cartItems.reduce((sum, item) => sum + item.totalPrice, 0);
+        const cartItem = await this.cartItemRepository.findByCartAndProduct(
+          cart.id,
+          request.productId
+        );
 
-        // Remove all cart items
-        await this.cartItemRepository.removeByCartId(cart.id);
+        if (!cartItem) {
+          throw new NotFoundDomainException(`Product ${request.productId} not found in cart`);
+        }
+
+        await this.cartItemRepository.remove(cartItem);
 
         // Update cart timestamp
         cart.updatedAt = new Date();
         await this.cartRepository.save(cart);
 
-        const clearedAt = new Date();
+        // Calculate cart totals
+        const cartItems = await this.cartItemRepository.findByCartId(cart.id);
+        const cartItemsCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+        const cartTotal = cartItems.reduce((sum, item) => sum + item.totalPrice, 0);
 
-        this.logger.log(`Cart cleared successfully`, {
+        this.logger.log(`Item removed from cart successfully`, {
           cartId: cart.id,
           userId: request.userId,
-          reason: request.reason,
-          itemsRemoved,
-          totalValueRemoved,
-          clearedAt,
+          productId: request.productId,
+          cartItemsCount,
+          cartTotal,
         });
 
         return {
           cartId: cart.id,
-          itemsRemoved,
-          totalValueRemoved,
-          clearedAt,
+          productId: request.productId,
+          cartItemsCount,
+          cartTotal,
         };
       },
       {

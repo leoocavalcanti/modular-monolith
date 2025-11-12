@@ -8,6 +8,7 @@ import { CartController } from './src/http/rest/controller/cart.controller';
 import { CartFacade } from './src/public-api/facade/cart.facade';
 import { AddItemToCartUseCase } from './src/core/use-case/add-item-to-cart.use-case';
 import { ClearCartUseCase } from './src/core/use-case/clear-cart.use-case';
+import { RemoveItemFromCartUseCase } from './src/core/use-case/remove-item-from-cart.use-case';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { ClearCartUseCase } from './src/core/use-case/clear-cart.use-case';
     
     // Application Use Cases
     AddItemToCartUseCase,
+    RemoveItemFromCartUseCase,
     ClearCartUseCase,
     
     // Public API

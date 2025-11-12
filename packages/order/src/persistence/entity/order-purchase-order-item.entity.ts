@@ -33,6 +33,10 @@ export class OrderPurchaseOrderItem extends DefaultEntity<OrderPurchaseOrderItem
     return this.unitPrice * this.quantity;
   }
 
+  get totalPrice(): number {
+    return this.getSubtotal();
+  }
+
   get price(): number {
     return this.unitPrice;
   }

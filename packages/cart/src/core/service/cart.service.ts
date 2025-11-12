@@ -1,22 +1,16 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import { NotFoundDomainException, DomainException } from '@tlc/shared-lib/common';
 import { Transactional } from 'typeorm-transactional';
+import { ICartService, AddToCartData } from './cart.service.interface';
 import { CartShoppingCartItem } from '../../persistence/entity/cart-shopping-cart-item.entity';
 import { CartShoppingCart } from '../../persistence/entity/cart-shopping-cart.entity';
 import { CartShoppingCartItemRepository } from '../../persistence/repository/cart-shopping-cart-item.repository';
 import { CartShoppingCartRepository } from '../../persistence/repository/cart-shopping-cart.repository';
 import { CartStatus } from '../enum/cart-status.enum';
 
-export interface AddToCartData {
-  productId: string;
-  productName: string;
-  productSku: string;
-  price: number;
-  quantity: number;
-  productAttributes?: Record<string, unknown>;
-}
 
 @Injectable()
-export class CartService {
+export class CartService implements ICartService {
   constructor(
     private readonly cartRepository: CartShoppingCartRepository,
     private readonly cartItemRepository: CartShoppingCartItemRepository
@@ -36,7 +30,7 @@ export class CartService {
     const cart = await this.cartRepository.findCartByIdWithItems(cartId);
     
     if (!cart) {
-      throw new NotFoundException(`Cart with ID ${cartId} not found`);
+      throw new NotFoundDomainException(`Cart with ID ${cartId} not found`);
     }
 
     return cart;
@@ -82,7 +76,7 @@ export class CartService {
     );
 
     if (!cartItem) {
-      throw new NotFoundException(`Product ${productId} not found in cart`);
+      throw new NotFoundDomainException(`Product ${productId} not found in cart`);
     }
 
     await this.cartItemRepository.remove(cartItem);
@@ -97,7 +91,7 @@ export class CartService {
     quantity: number
   ): Promise<CartShoppingCart> {
     if (quantity <= 0) {
-      throw new BadRequestException('Quantity must be greater than 0');
+      throw new DomainException('Quantity must be greater than 0');
     }
 
     const cart = await this.getUserActiveCart(userId);
@@ -108,7 +102,7 @@ export class CartService {
     );
 
     if (!cartItem) {
-      throw new NotFoundException(`Product ${productId} not found in cart`);
+      throw new NotFoundDomainException(`Product ${productId} not found in cart`);
     }
 
     cartItem.quantity = quantity;

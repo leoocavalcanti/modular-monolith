@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config';
 import { TypeOrmPersistenceModule } from '@tlc/shared-module/typeorm';
 import { DataSource } from 'typeorm';
 import { addTransactionalDataSource } from 'typeorm-transactional';
-import { OrderPurchaseOrder } from './entity/order-purchase-order.entity';
 import { OrderPurchaseOrderItem } from './entity/order-purchase-order-item.entity';
+import { OrderPurchaseOrder } from './entity/order-purchase-order.entity';
+import { OrderPurchaseOrderItemRepository } from './repository/order-purchase-order-item.repository';
 import { OrderPurchaseOrderRepository } from './repository/order-purchase-order.repository';
 
 @Module({
@@ -35,7 +36,7 @@ import { OrderPurchaseOrderRepository } from './repository/order-purchase-order.
       },
     }),
   ],
-  providers: [OrderPurchaseOrderRepository],
-  exports: [OrderPurchaseOrderRepository],
+  providers: [OrderPurchaseOrderRepository, OrderPurchaseOrderItemRepository],
+  exports: [OrderPurchaseOrderRepository, OrderPurchaseOrderItemRepository],
 })
 export class OrderPersistenceModule {}
