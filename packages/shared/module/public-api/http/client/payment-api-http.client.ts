@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { HttpClient } from '@tlc/shared-module/http-client';
+import { HttpClient } from '../../../http-client/client/http.client';
 import { PaymentApiInterface, PaymentRequest, PaymentResult } from '../../interface/payment-api.interface';
 
 @Injectable()

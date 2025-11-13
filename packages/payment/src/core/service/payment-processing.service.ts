@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { PaymentTransaction } from '../../persistence/entity/payment-transaction.entity';
-import { PaymentSimulatorService } from './payment-simulator.service';
-import { PaymentAmount } from '../model/payment-amount.model';
 import { PaymentStatus } from '../enum/payment-status.enum';
+import { PaymentAmount } from '../model/payment-amount.model';
+import { PaymentSimulatorService } from './payment-simulator.service';
 
 /**
  * Domain Service: PaymentProcessingService
@@ -64,7 +64,7 @@ export class PaymentProcessingService {
   /**
    * Domain Logic: Validate payment amount
    */
-  validatePaymentAmount(amount: number, currency: string = 'BRL'): PaymentAmount {
+  validatePaymentAmount(amount: number, currency = 'BRL'): PaymentAmount {
     const paymentAmount = new PaymentAmount(amount, currency);
     
     if (!paymentAmount.isWithinPaymentLimits()) {
@@ -77,7 +77,7 @@ export class PaymentProcessingService {
   /**
    * Domain Logic: Calculate processing fee
    */
-  calculateProcessingFee(amount: number, paymentMethod: string, currency: string = 'BRL'): number {
+  calculateProcessingFee(amount: number, paymentMethod: string, currency = 'BRL'): number {
     const paymentAmount = new PaymentAmount(amount, currency);
     const fee = paymentAmount.calculateProcessingFee(paymentMethod);
     return fee.getValue();
@@ -93,7 +93,7 @@ export class PaymentProcessingService {
   /**
    * Domain Logic: Check if payment can be retried
    */
-  canRetryPayment(transaction: PaymentTransaction, maxRetries: number = 3): boolean {
+  canRetryPayment(transaction: PaymentTransaction, maxRetries = 3): boolean {
     if (transaction.status !== 'failed') {
       return false;
     }

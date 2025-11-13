@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Transactional } from 'typeorm-transactional';
-import { CatalogProductRepository } from '../../persistence/repository/catalog-product.repository';
 import { CatalogProduct } from '../../persistence/entity/catalog-product.entity';
+import { CatalogProductRepository } from '../../persistence/repository/catalog-product.repository';
 import { ProductCategory } from '../enum/product-category.enum';
 import { ProductStatus } from '../enum/product-status.enum';
 
@@ -73,7 +73,7 @@ export class CatalogProductService {
       category: data.category,
       imageUrls: data.imageUrls || [],
       attributes: data.attributes || {},
-      status: ProductStatus.DRAFT,
+      status: ProductStatus.ACTIVE,  
     });
 
     return this.catalogProductRepository.save(product);
